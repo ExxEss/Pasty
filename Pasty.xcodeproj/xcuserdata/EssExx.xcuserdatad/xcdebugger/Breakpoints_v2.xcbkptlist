@@ -84,5 +84,53 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "793A8269-F1F8-4671-B9E8-3779868BA0A4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pasty/BufferController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "98"
+            endingLineNumber = "98"
+            landmarkName = "bufferDidChange(_:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "793A8269-F1F8-4671-B9E8-3779868BA0A4 - 6f7c5363f26ba244"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Pasty.BufferController.clipboardDidChange(Foundation.Notification) -&gt; ()"
+                  moduleName = "Pasty"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EssExx/Pasty/Pasty/BufferController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "90"
+                  endingLineNumber = "90"
+                  offsetFromSymbolStart = "32">
+               </Location>
+               <Location
+                  uuid = "793A8269-F1F8-4671-B9E8-3779868BA0A4 - 6f7c5363f26ba14c"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Pasty.BufferController.clipboardDidChange(Foundation.Notification) -&gt; ()"
+                  moduleName = "Pasty"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EssExx/Pasty/Pasty/BufferController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "98"
+                  endingLineNumber = "98"
+                  offsetFromSymbolStart = "32">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

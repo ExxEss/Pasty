@@ -10,6 +10,7 @@ import Cocoa
 class BufferController: NSViewController {
     private var historyView: NSTableView!
     private var clipboardHistory: [String] = []
+    private var clipboardColumn: NSTableColumn?
 
     override func loadView() {
         // Load the clipboard history first to know how many items we have.
@@ -70,6 +71,13 @@ class BufferController: NSViewController {
             scrollView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ])
 
+        // Add a single column to the table view
+        clipboardColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "ClipboardColumn"))
+        clipboardColumn?.title = "Items (\(clipboardHistory.count))"
+        if let column = clipboardColumn {
+            historyView.addTableColumn(column)
+        }
+
         // Remove the header view
         historyView.headerView = nil
 
@@ -82,11 +90,11 @@ class BufferController: NSViewController {
     }
         
     private func registerForClipboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(clipboardDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(bufferReset(_:)), name: NSNotification.Name("BufferReset"), object: nil)
     }
 
-    @objc private func clipboardDidChange(_ notification: Notification) {
+    @objc private func bufferDidChange(_ notification: Notification) {
         reloadHistory()
     }
     
@@ -97,6 +105,8 @@ class BufferController: NSViewController {
     private func reloadHistory() {
         clipboardHistory = ClipboardManager.shared.getHistory()
         historyView.reloadData()
+        
+        clipboardColumn?.title = "Items (\(clipboardHistory.count))"
 
         // Calculate the new height of the table view
         let rowHeight: CGFloat = 30

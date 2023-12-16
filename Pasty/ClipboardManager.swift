@@ -55,6 +55,7 @@ class ClipboardManager {
                 } else {
                     popped = false
                 }
+                
                 NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: text)
 
                 if clipboardHistory.count > 2 {

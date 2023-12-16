@@ -37,7 +37,7 @@ class PanelController: NSWindowController {
         super.init(window: panel)
         
         let count = ClipboardManager.shared.getHistory().count
-        panel.title = "Pasty buffer: \(count) items"
+        panel.title = "Items to paste: \(count)"
         panel.titlebarAppearsTransparent = true
 
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -63,18 +63,17 @@ class PanelController: NSWindowController {
     
     func updatePanelTitle(withItemCount count: Int) {
         if let panel = window as? BufferPanel {
-            panel.title = "Pasty buffer: \(count) items"
+            panel.title = "Items to paste: \(count)"
         }
     }
     
     private func registerForClipboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(clipboardHistoryDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
-    @objc private func clipboardHistoryDidChange(_ notification: Notification) {
-        if let itemCount = notification.object as? Int {
-            updatePanelTitle(withItemCount: itemCount)
-        }
+    @objc private func bufferDidChange(_ notification: Notification) {
+        let count = ClipboardManager.shared.getHistory().count
+        updatePanelTitle(withItemCount: count)
     }
 
     @objc func windowWillClose(notification: Notification) {

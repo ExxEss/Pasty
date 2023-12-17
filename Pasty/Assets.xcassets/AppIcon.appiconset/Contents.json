@@ -21,16 +21,13 @@
       "size" : "32x32"
     },
     {
-      "idiom" : "mac",
-      "scale" : "1x",
-      "size" : "128x128"
-    },
-    {
+      "filename" : "clipboard_1f4cb.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
+      "filename" : "clipboard_1f4cb 1.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"

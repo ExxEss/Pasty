@@ -14,7 +14,6 @@
 		53DAD4842B2D39E500213CC2 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4832B2D39E500213CC2 /* PanelController.swift */; };
 		53DAD4862B2D3A1C00213CC2 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */; };
 		53DAD4882B2D3A5A00213CC2 /* BufferController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4872B2D3A5A00213CC2 /* BufferController.swift */; };
-		53DAD48A2B2D5E4D00213CC2 /* CustomHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4892B2D5E4D00213CC2 /* CustomHeaderCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +26,6 @@
 		53DAD4832B2D39E500213CC2 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
 		53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
 		53DAD4872B2D3A5A00213CC2 /* BufferController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferController.swift; sourceTree = "<group>"; };
-		53DAD4892B2D5E4D00213CC2 /* CustomHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHeaderCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,7 +63,6 @@
 				53DAD4832B2D39E500213CC2 /* PanelController.swift */,
 				53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */,
 				53DAD4872B2D3A5A00213CC2 /* BufferController.swift */,
-				53DAD4892B2D5E4D00213CC2 /* CustomHeaderCell.swift */,
 				53DAD4762B2D394B00213CC2 /* Assets.xcassets */,
 				53DAD47B2B2D394B00213CC2 /* Pasty.entitlements */,
 				53DAD4782B2D394B00213CC2 /* Preview Content */,
@@ -152,7 +149,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				53DAD4862B2D3A1C00213CC2 /* ClipboardManager.swift in Sources */,
-				53DAD48A2B2D5E4D00213CC2 /* CustomHeaderCell.swift in Sources */,
 				53DAD4842B2D39E500213CC2 /* PanelController.swift in Sources */,
 				53DAD4882B2D3A5A00213CC2 /* BufferController.swift in Sources */,
 				53DAD4822B2D39AC00213CC2 /* BufferPanel.swift in Sources */,

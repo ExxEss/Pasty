@@ -12,10 +12,10 @@ class PanelController: NSWindowController {
     static let shared = PanelController()
 
     private init() {
-        let panelWidth: CGFloat = 300  // Updated width
+        let panelWidth: CGFloat = 300
         let panelHeight: CGFloat = 200
 
-        // Default values in case screen details are not c
+        // Default values in case screen details are not screen
         var x: CGFloat = 100
         var y: CGFloat = 100
 
@@ -61,7 +61,8 @@ class PanelController: NSWindowController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    func updatePanelTitle(withItemCount count: Int) {
+    func updatePanelTitle() {
+        let count = ClipboardManager.shared.getHistory().count
         if let panel = window as? BufferPanel {
             panel.title = "Items to paste: \(count)"
         }
@@ -72,8 +73,7 @@ class PanelController: NSWindowController {
     }
     
     @objc private func bufferDidChange(_ notification: Notification) {
-        let count = ClipboardManager.shared.getHistory().count
-        updatePanelTitle(withItemCount: count)
+        updatePanelTitle()
     }
 
     @objc func windowWillClose(notification: Notification) {
@@ -84,18 +84,21 @@ class PanelController: NSWindowController {
     func showPanel() {
         if let window = self.window, let contentView = window.contentView {
             var frame = window.frame
-            frame.size.height = contentView.frame.size.height // Use contentView's height
-            // If you want to keep the window's top at the same position when resizing
+            
+            // Use contentView's height
+            frame.size.height = contentView.frame.size.height
             let oldHeight = window.frame.height
             frame.origin.y += (oldHeight - frame.size.height)
 
             window.setFrame(frame, display: true)
             window.orderFront(nil)
         }
+        updatePanelTitle()
     }
     
     func closePanel() {
-        self.window?.close()  // or any other logic to hide/close the panel
+        updatePanelTitle()
+        self.window?.close()
     }
 }
 

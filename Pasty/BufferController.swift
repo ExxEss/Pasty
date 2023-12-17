@@ -17,11 +17,11 @@ class BufferController: NSViewController {
         clipboardHistory = ClipboardManager.shared.getHistory()
         
         // Calculate the height based on the number of items.
-        let rowHeight: CGFloat = 30  // Adjust if your row height is different
+        let rowHeight: CGFloat = 30
         let totalRowsHeight = rowHeight * CGFloat(clipboardHistory.count)
         
         // Calculate the minimum height needed to display the table without overlapping the header.
-        let paddingTop: CGFloat = 40  // Adjust if your header height is different
+        let paddingTop: CGFloat = 40
         let totalHeight = totalRowsHeight + paddingTop
         
         // Create the view with the new dynamic height, ensuring it starts below the header.
@@ -130,12 +130,10 @@ class BufferController: NSViewController {
 
                 // Animate the frame change
                 NSAnimationContext.runAnimationGroup({ context in
-                    context.duration = 0.3 // Set the duration of the animation
+                    context.duration = 0.3
                     context.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
                     window.animator().setFrame(newWindowFrame, display: true, animate: true)
-                }, completionHandler: {
-                    // Completion code if needed
-                })
+                }, completionHandler: {})
             }
         }
     }
@@ -149,10 +147,10 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
     }
     
     func tableViewSelectionDidChange(_ notification: Notification) {
-        if let selectedRow = historyView.selectedRowIndexes.first {
-             let selectedItem = clipboardHistory[selectedRow]
-            // Perform an action with the selected item, like copying it to the clipboard
-        }
+//        if let selectedRow = historyView.selectedRowIndexes.first {
+//             let selectedItem = clipboardHistory[selectedRow]
+//            // Perform an action with the selected item, like copying it to the clipboard
+//        }
     }
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {

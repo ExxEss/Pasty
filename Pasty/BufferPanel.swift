@@ -13,8 +13,16 @@ class BufferPanel: NSPanel {
         return true
     }
     
-    override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
-        super.init(contentRect: contentRect, styleMask: [.nonactivatingPanel, .fullSizeContentView, .titled, .resizable, .closable, .miniaturizable], backing: backingStoreType, defer: flag)
+    override init(contentRect: NSRect, 
+                  styleMask style: NSWindow.StyleMask,
+                  backing backingStoreType: NSWindow.BackingStoreType,
+                  defer flag: Bool) {
+        
+        super.init(contentRect: contentRect,
+                   styleMask: [.nonactivatingPanel,
+                               .fullSizeContentView,
+                               .titled, .resizable, .closable,
+                               .miniaturizable], backing: backingStoreType, defer: flag)
         
         self.level = .floating
         self.isMovableByWindowBackground = true
@@ -23,11 +31,11 @@ class BufferPanel: NSPanel {
         self.titlebarAppearsTransparent = true
         
         // Set up the visual effect view
-        let visualEffect = NSVisualEffectView(frame: self.contentRect(forFrameRect: self.frame))
-        visualEffect.blendingMode = .behindWindow
-        visualEffect.state = .active
-        visualEffect.material = .hudWindow // Or another material appropriate for your design
-        self.contentView = visualEffect
+//        let visualEffect = NSVisualEffectView(frame: self.contentRect(forFrameRect: self.frame))
+//        visualEffect.blendingMode = .behindWindow
+//        visualEffect.state = .active
+//        visualEffect.material = .hudWindow
+//        self.contentView = visualEffect
     }
     
 }

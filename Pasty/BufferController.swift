@@ -21,11 +21,11 @@ class BufferController: NSViewController {
         let totalRowsHeight = rowHeight * CGFloat(clipboardHistory.count)
         
         // Calculate the minimum height needed to display the table without overlapping the header.
-        let paddingTop: CGFloat = 40
+        let paddingTop: CGFloat = 50
         let totalHeight = totalRowsHeight + paddingTop
         
         // Create the view with the new dynamic height, ensuring it starts below the header.
-        let newView = NSView(frame: NSRect(x: 0, y: paddingTop, width: 280, height: totalHeight))
+        let newView = NSView(frame: NSRect(x: 0, y: paddingTop, width: 290, height: totalHeight))
 
         // Create and configure the visual effect view
         let visualEffectView = NSVisualEffectView(frame: newView.bounds)
@@ -61,6 +61,14 @@ class BufferController: NSViewController {
 
         // Add the scroll view to the view controller's view
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Hide the vertical and horizontal scroll bars
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+
+        // Scroll bars will appear during scrolling only
+        scrollView.autohidesScrollers = true
+        
         self.view.addSubview(scrollView)
 
         // Set up constraints for the scroll view
@@ -110,7 +118,7 @@ class BufferController: NSViewController {
 
         // Calculate the new height of the table view
         let rowHeight: CGFloat = 30
-        let newHeight = rowHeight * CGFloat(clipboardHistory.count) + 15
+        let newHeight = rowHeight * CGFloat(clipboardHistory.count) + 20
 
         // Determine the maximum height based on the screen size or a fixed maximum.
         let maxHeight = NSScreen.main?.visibleFrame.height ?? 600 // Example max height.
@@ -137,7 +145,6 @@ class BufferController: NSViewController {
             }
         }
     }
-
 }
 
 extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
@@ -158,7 +165,6 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
         var cellView: NSTableCellView
         var textField: NSTextField
         
-        // Reuse or create the cell view
         if let existingCellView = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView {
             cellView = existingCellView
             textField = existingCellView.textField!
@@ -166,7 +172,7 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
             cellView = NSTableCellView(frame: NSRect(x: 0, y: 0, width: tableColumn?.width ?? 200, height: 25))
             cellView.identifier = cellIdentifier
             
-            textField = NSTextField(frame: NSInsetRect(cellView.bounds, 5, 5))
+            textField = NSTextField()
             textField.isBezeled = false
             textField.drawsBackground = false
             textField.isEditable = false
@@ -178,14 +184,18 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
             cellView.textField = textField
         }
         
+        // Adjust the text field's frame to remove horizontal padding and center vertically
+        textField.frame = CGRect(x: 0,
+                                 y: (cellView.bounds.height - textField.font!.pointSize) / 2 - 2, // Center vertically
+                                 width: cellView.bounds.width,
+                                 height: textField.font!.pointSize + 4) // Adjust height as needed
+        
         textField.stringValue = formatString(from: clipboardHistory[row])
         
         // Additional styling to mimic a menu item
         textField.backgroundColor = .clear
         textField.enclosingScrollView?.drawsBackground = false
         textField.lineBreakMode = .byTruncatingTail
-        
-        cellView.enclosingScrollView?.drawsBackground = false
         
         return cellView
     }

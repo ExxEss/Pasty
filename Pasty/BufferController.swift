@@ -178,7 +178,7 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
             cellView.textField = textField
         }
         
-        textField.stringValue = clipboardHistory[row]
+        textField.stringValue = formatString(from: clipboardHistory[row])
         
         // Additional styling to mimic a menu item
         textField.backgroundColor = .clear
@@ -193,5 +193,11 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
 
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return 30 // Adjust the height to match menu item style
+    }
+    
+    private func formatString(from originalString: String) -> String {
+        let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let formattedString = trimmedString.replacingOccurrences(of: "\n", with: "⏎")
+        return formattedString
     }
 }

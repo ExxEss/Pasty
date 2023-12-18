@@ -71,6 +71,10 @@ class ClipboardManager {
         
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
         
+        closePanel()
+    }
+    
+    private func closePanel() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             PanelController.shared.closePanel()
         }
@@ -88,7 +92,7 @@ class ClipboardManager {
             simulatePasteAction()
             
             if clipboardHistory.isEmpty {
-                resetBuffer()
+                closePanel()
             }
         }
     }

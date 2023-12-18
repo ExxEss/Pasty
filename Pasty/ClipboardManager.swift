@@ -69,7 +69,7 @@ class ClipboardManager {
         clipboardHistory = []
         popped = false
         
-        NotificationCenter.default.post(name: NSNotification.Name("BufferReset"), object: [])
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             PanelController.shared.closePanel()

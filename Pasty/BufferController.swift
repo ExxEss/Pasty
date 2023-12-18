@@ -99,14 +99,9 @@ class BufferController: NSViewController {
         
     private func registerForClipboardNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(bufferReset(_:)), name: NSNotification.Name("BufferReset"), object: nil)
     }
 
     @objc private func bufferDidChange(_ notification: Notification) {
-        reloadHistory()
-    }
-    
-    @objc private func bufferReset(_ notification: Notification) {
         reloadHistory()
     }
 

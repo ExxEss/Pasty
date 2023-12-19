@@ -202,7 +202,7 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
     
     private func formatString(from originalString: String) -> String {
         let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
-        let formattedString = trimmedString.replacingOccurrences(of: "\n", with: "⏎")
+        let formattedString = trimmedString.replacingOccurrences(of: "\n", with: " ↩︎ ")
         return formattedString
     }
 }

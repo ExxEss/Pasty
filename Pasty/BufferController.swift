@@ -190,7 +190,7 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
         // Additional styling to mimic a menu item
         textField.backgroundColor = .clear
         textField.enclosingScrollView?.drawsBackground = false
-        textField.lineBreakMode = .byTruncatingTail
+        textField.lineBreakMode = .byTruncatingMiddle
         
         return cellView
     }

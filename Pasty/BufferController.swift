@@ -202,7 +202,17 @@ extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
     
     private func formatString(from originalString: String) -> String {
         let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
-        let formattedString = trimmedString.replacingOccurrences(of: "\n", with: " ↩︎ ")
+        
+        // Regular expression to match sequences of two or more newline characters
+        let newlineRegex = try! NSRegularExpression(pattern: "\n{1,}", options: [])
+        
+        let range = NSRange(trimmedString.startIndex..<trimmedString.endIndex, in: trimmedString)
+        
+        // Replace each match with the same sequence followed by a space
+        var formattedString = newlineRegex.stringByReplacingMatches(in: trimmedString, options: [], range: range, withTemplate: "$0 ")
+        
+        formattedString = formattedString.replacingOccurrences(of: "\n", with: " ↩︎")
+        
         return formattedString
     }
 }

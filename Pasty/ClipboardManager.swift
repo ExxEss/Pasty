@@ -76,9 +76,6 @@ class ClipboardManager {
 
     @objc func resetBufferAndClosePanel() {
         resetBuffer()
-    
-        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
-        
         closePanel()
     }
     
@@ -89,9 +86,11 @@ class ClipboardManager {
         }
     }
     
-    private func resetBuffer() {
+    func resetBuffer() {
         clipboardHistory = []
         popped = false
+        
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
     }
     
     private func closePanel() {
@@ -155,7 +154,7 @@ class ClipboardManager {
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBuffer()
+                mySelf.resetBufferAndClosePanel()
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {

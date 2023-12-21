@@ -79,7 +79,7 @@ class PanelController: NSWindowController {
 
     @objc func windowWillClose(notification: Notification) {
         // Call resetBuffer when the window is about to close
-        ClipboardManager.shared.resetBufferAndClosePanel()
+        ClipboardManager.shared.resetBuffer()
     }
 
     func showPanel() {

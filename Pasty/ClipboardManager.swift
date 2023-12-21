@@ -30,7 +30,7 @@ class ClipboardManager {
 
     func startMonitoring() {
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
-        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timerResetBuffer), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(autoResetBuffer), userInfo: nil, repeats: true)
         
         self.setupHotKey()
     }
@@ -74,21 +74,24 @@ class ClipboardManager {
         }
     }
 
-    @objc func resetBuffer(autoMode: Bool) {
-        if !autoMode || (lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120) {
-            clipboardHistory = []
-            popped = false
-        }
+    @objc func resetBufferAndClosePanel() {
+        resetBuffer()
+    
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
         
-        if !autoMode && PanelController.shared.isPanelOpen {
-            NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
-            
-            closePanel()
+        closePanel()
+    }
+    
+    @objc func autoResetBuffer() {
+        if lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120 &&
+            !PanelController.shared.isPanelOpen {
+            resetBuffer()
         }
     }
     
-    @objc private func timerResetBuffer() {
-        resetBuffer(autoMode: true)
+    private func resetBuffer() {
+        clipboardHistory = []
+        popped = false
     }
     
     private func closePanel() {
@@ -139,7 +142,8 @@ class ClipboardManager {
         simulateKeyPress(keyCode: CGKeyCode(kVK_Command), keyDown: false)
     }
 
-    private static func hotKeyCallBack(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
+    private static func hotKeyCallBack(proxy: CGEventTapProxy, type: CGEventType, 
+                                       event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
         guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
         let mySelf = Unmanaged<ClipboardManager>.fromOpaque(refcon).takeUnretainedValue()
 
@@ -151,7 +155,7 @@ class ClipboardManager {
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBuffer(autoMode: false)
+                mySelf.resetBuffer()
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {

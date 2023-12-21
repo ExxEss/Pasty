@@ -75,7 +75,7 @@ class ClipboardManager {
     }
 
     @objc func resetBuffer(autoMode: Bool) {
-        if !autoMode || (lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) <= 120) {
+        if !autoMode || (lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120) {
             clipboardHistory = []
             popped = false
         }
@@ -104,7 +104,6 @@ class ClipboardManager {
     private func paste() {
         if let firstItem = clipboardHistory.first {
             clipboardHistory.removeFirst()
-            lastChangeDate = Date()
             popped = true
             copyToClipboard(firstItem)
             simulatePasteAction()

@@ -10,6 +10,7 @@ import Cocoa
 
 class PanelController: NSWindowController {
     static let shared = PanelController()
+    var isPanelOpen: Bool = false
 
     private init() {
         let panelWidth: CGFloat = 300
@@ -78,7 +79,7 @@ class PanelController: NSWindowController {
 
     @objc func windowWillClose(notification: Notification) {
         // Call resetBuffer when the window is about to close
-        ClipboardManager.shared.resetBuffer()
+        ClipboardManager.shared.resetBuffer(autoMode: false)
     }
 
     func showPanel() {
@@ -92,6 +93,7 @@ class PanelController: NSWindowController {
 
             window.setFrame(frame, display: true)
             window.orderFront(nil)
+            isPanelOpen = true
         }
         updatePanelTitle()
     }
@@ -99,6 +101,7 @@ class PanelController: NSWindowController {
     func closePanel() {
         updatePanelTitle()
         self.window?.close()
+        isPanelOpen = false
     }
 }
 

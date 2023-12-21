@@ -25,6 +25,7 @@ class ClipboardManager {
 
     func startMonitoring() {
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(timerResetBuffer), userInfo: nil, repeats: true)
         self.setupHotKey()
     }
 
@@ -65,13 +66,19 @@ class ClipboardManager {
         }
     }
 
-    @objc func resetBuffer() {
+    @objc func resetBuffer(autoMode: Bool) {
         clipboardHistory = []
         popped = false
         
-        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
-        
-        closePanel()
+        if !autoMode && PanelController.shared.isPanelOpen {
+            NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
+            
+            closePanel()
+        }
+    }
+    
+    @objc private func timerResetBuffer() {
+        resetBuffer(autoMode: true)
     }
     
     private func closePanel() {
@@ -134,7 +141,7 @@ class ClipboardManager {
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBuffer()
+                mySelf.resetBuffer(autoMode: false)
             }
             
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {

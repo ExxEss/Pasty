@@ -98,7 +98,8 @@ class BufferController: NSViewController {
     }
         
     private func registerForClipboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), 
+                                               name: NSNotification.Name("BufferChanged"), object: nil)
     }
 
     @objc private func bufferDidChange(_ notification: Notification) {

@@ -13,11 +13,16 @@ let kVK_ANSI_V: CGKeyCode = 0x09
 
 class ClipboardManager {
     static let shared = ClipboardManager()
+    
     private var pasteboard = NSPasteboard.general
+    
     private var changeCount = NSPasteboard.general.changeCount
+    
     private var clipboardHistory: [String] = []
     
     private var popped = false
+    
+    var lastChangeDate: Date?
     
     private var eventTap: CFMachPort?
 
@@ -25,7 +30,8 @@ class ClipboardManager {
 
     func startMonitoring() {
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
-        Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(timerResetBuffer), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timerResetBuffer), userInfo: nil, repeats: true)
+        
         self.setupHotKey()
     }
 
@@ -50,6 +56,8 @@ class ClipboardManager {
     @objc private func checkForChanges() {
         if pasteboard.changeCount != changeCount {
             changeCount = pasteboard.changeCount
+            lastChangeDate = Date()
+            
             if let text = pasteboard.string(forType: .string) {
                 if !popped {
                     clipboardHistory.append(text)
@@ -67,8 +75,10 @@ class ClipboardManager {
     }
 
     @objc func resetBuffer(autoMode: Bool) {
-        clipboardHistory = []
-        popped = false
+        if !autoMode || (lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) <= 120) {
+            clipboardHistory = []
+            popped = false
+        }
         
         if !autoMode && PanelController.shared.isPanelOpen {
             NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
@@ -94,6 +104,7 @@ class ClipboardManager {
     private func paste() {
         if let firstItem = clipboardHistory.first {
             clipboardHistory.removeFirst()
+            lastChangeDate = Date()
             popped = true
             copyToClipboard(firstItem)
             simulatePasteAction()

@@ -153,6 +153,16 @@ class ClipboardManager {
                 return nil
             }
             
+            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x08 {
+                let count = NSPasteboard.general.changeCount
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if count == NSPasteboard.general.changeCount {
+                        mySelf.resetBufferAndClosePanel()
+                    }
+                }
+            }
+            
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
                 mySelf.resetBufferAndClosePanel()
             }

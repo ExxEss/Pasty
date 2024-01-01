@@ -177,9 +177,14 @@ class BufferController: NSViewController {
             return // No selection
         }
 
-        let newPosition = direction == .up ? selectedRow - 1 : selectedRow + 1
-        guard newPosition >= 0 && newPosition < clipboardHistory.count else {
-            return // New position out of bounds
+        var newPosition = direction == .up ? selectedRow - 1 : selectedRow + 1
+
+        if newPosition >= clipboardHistory.count {
+            // If the new position is beyond the last item, move to the start (index 0)
+            newPosition = 0
+        } else if newPosition < 0 {
+            // If the new position is before the first item, move to the end (last index)
+            newPosition = clipboardHistory.count - 1
         }
 
         ClipboardManager.shared.moveItem(from: selectedRow, to: newPosition)

@@ -188,12 +188,21 @@ class ClipboardManager {
         let mySelf = Unmanaged<ClipboardManager>.fromOpaque(refcon).takeUnretainedValue()
 
         if type == .keyDown, let nsEvent = NSEvent(cgEvent: event) {
+            // cmd + shift + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command, .shift] && nsEvent.keyCode == 9 {
                 mySelf.paste()
                 // Return nil to stop propagation of this event
                 return nil
             }
             
+            // cmd + d
+            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x02 {
+                mySelf.paste()
+                // Return nil to stop propagation of this event
+                return nil
+            }
+            
+            // cmd + c
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x08 {
                 let count = NSPasteboard.general.changeCount
                 
@@ -204,10 +213,12 @@ class ClipboardManager {
                 }
             }
             
+            // cmd + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
                 mySelf.resetBufferAndClosePanel()
             }
             
+            // cmd + option + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {
                 mySelf.simulatePasteAction()
                 return nil

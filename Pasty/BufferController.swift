@@ -7,8 +7,12 @@
 
 import Cocoa
 
+enum MoveDirection {
+    case up, down
+}
+
 class BufferController: NSViewController {
-    private var historyView: NSTableView!
+    private var historyView: CustomTableView!
     private var clipboardHistory: [String] = []
     private var clipboardColumn: NSTableColumn?
 
@@ -49,7 +53,7 @@ class BufferController: NSViewController {
 
 
     private func setupTableView() {
-        historyView = NSTableView()
+        historyView = CustomTableView()
         historyView.dataSource = self
         historyView.delegate = self
 
@@ -96,6 +100,11 @@ class BufferController: NSViewController {
         historyView.enclosingScrollView?.drawsBackground = false
         historyView.backgroundColor = NSColor.clear
     }
+    
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        self.view.window?.makeFirstResponder(historyView)
+    }
         
     private func registerForClipboardNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), 
@@ -139,6 +148,82 @@ class BufferController: NSViewController {
                     window.animator().setFrame(newWindowFrame, display: true, animate: true)
                 }, completionHandler: {})
             }
+        }
+    }
+    
+    override func keyDown(with event: NSEvent) {
+        guard let characters = event.charactersIgnoringModifiers else {
+            return
+        }
+        
+        switch characters {
+        case "d":
+            duplicateSelectedItem()
+        case "x":
+            deleteSelectedItem()
+        default:
+            super.keyDown(with: event)
+        }
+    }
+    
+    @objc func concatenateItems() {
+        ClipboardManager.shared.concatenateItems()
+        historyView.reloadData()
+    }
+    
+    func moveSelectedItem(direction: MoveDirection) {
+        let selectedRow = historyView.selectedRow
+        guard selectedRow >= 0 else {
+            return // No selection
+        }
+
+        let newPosition = direction == .up ? selectedRow - 1 : selectedRow + 1
+        guard newPosition >= 0 && newPosition < clipboardHistory.count else {
+            return // New position out of bounds
+        }
+
+        ClipboardManager.shared.moveItem(from: selectedRow, to: newPosition)
+
+        // Reload the table view and update selection
+        historyView.reloadData()
+        historyView.selectRowIndexes(IndexSet(integer: newPosition), byExtendingSelection: false)
+    }
+
+    @objc func duplicateSelectedItem() {
+        let selectedRow = historyView.selectedRow
+        guard selectedRow >= 0 else {
+            return // No selection
+        }
+
+        let itemToDuplicate = ClipboardManager.shared.getHistory()[selectedRow]
+        ClipboardManager.shared.duplicateItem(itemToDuplicate, at: selectedRow)
+
+        // Reload the table view and select the new duplicated row
+        historyView.reloadData()
+        
+        let newRowToSelect = selectedRow + 1 // The duplicated row will be after the original
+        historyView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
+    }
+
+    
+    @objc func deleteSelectedItem() {
+        let selectedRow = historyView.selectedRow
+        guard selectedRow >= 0 else {
+            return // No selection
+        }
+        
+        ClipboardManager.shared.deleteItem(at: selectedRow)
+        
+        // Reload the table view
+        historyView.reloadData()
+        
+        // Determine the new row to select
+        let newRowCount = ClipboardManager.shared.getHistory().count
+        if newRowCount > 0 {
+            let newRowToSelect = selectedRow >= newRowCount ? newRowCount - 1 : selectedRow
+            historyView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
+        } else {
+            // No rows left to select
         }
     }
 }

@@ -102,6 +102,47 @@ class ClipboardManager {
     func getHistory() -> [String] {
         return clipboardHistory
     }
+    
+    func concatenateItems() {
+        let concatenatedString = clipboardHistory.joined(separator: " ")
+        clipboardHistory = [concatenatedString]
+        
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+    }
+    
+    func moveItem(from oldIndex: Int, to newIndex: Int) {
+        guard oldIndex != newIndex,
+              oldIndex >= 0, oldIndex < clipboardHistory.count,
+              newIndex >= 0, newIndex < clipboardHistory.count else {
+            return
+        }
+        
+        let item = clipboardHistory.remove(at: oldIndex)
+        clipboardHistory.insert(item, at: newIndex)
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+    }
+    
+    func duplicateItem(_ item: String, at index: Int) {
+        guard index >= 0 && index < clipboardHistory.count else {
+            return // Index out of bounds check
+        }
+        
+        clipboardHistory.insert(item, at: index + 1)
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+    }
+    
+    func deleteItem(at index: Int) {
+        guard index >= 0 && index < clipboardHistory.count else {
+            return // Index out of bounds check
+        }
+        
+        clipboardHistory.remove(at: index)
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+        
+        if clipboardHistory.count == 0 {
+            closePanel()
+        }
+    }
 
     private func paste() {
         if let firstItem = clipboardHistory.first {

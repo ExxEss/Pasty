@@ -220,7 +220,7 @@ class ClipboardManager {
             
             // cmd + option + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {
-                mySelf.simulatePasteAction()
+                PanelController.shared.showPanel(makeKey: true)
                 return nil
             }
         }

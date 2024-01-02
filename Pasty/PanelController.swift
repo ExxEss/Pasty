@@ -82,18 +82,20 @@ class PanelController: NSWindowController {
         ClipboardManager.shared.resetBuffer()
     }
 
-    func showPanel() {
+    func showPanel(makeKey: Bool = false) {
         if let window = self.window, let contentView = window.contentView {
             var frame = window.frame
-            
-            // Use contentView's height
-            frame.size.height = contentView.frame.size.height
+            frame.size.height = contentView.frame.size.height // Use contentView's height
             let oldHeight = window.frame.height
             frame.origin.y += (oldHeight - frame.size.height)
 
             window.setFrame(frame, display: true)
             window.orderFront(nil)
             isPanelOpen = true
+
+            if makeKey {
+                window.makeKeyAndOrderFront(nil)
+            }
         }
         updatePanelTitle()
     }

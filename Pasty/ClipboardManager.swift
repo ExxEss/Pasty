@@ -7,6 +7,8 @@
 
 import Cocoa
 import CoreGraphics
+import HotKey
+
 
 let kVK_Command: CGKeyCode = 0x37
 let kVK_ANSI_V: CGKeyCode = 0x09
@@ -25,6 +27,9 @@ class ClipboardManager {
     var lastChangeDate: Date?
     
     private var eventTap: CFMachPort?
+    
+    private var sequentialPasteHotKey: HotKey?
+    private var showPanelHotKey: HotKey?
 
     private init() {}
 
@@ -36,6 +41,16 @@ class ClipboardManager {
     }
 
     private func setupHotKey() {
+        sequentialPasteHotKey = HotKey(key: .d, modifiers: [.command])
+        sequentialPasteHotKey?.keyDownHandler = { [weak self] in
+            self?.paste()
+        }
+        
+        showPanelHotKey = HotKey(key: .b, modifiers: [.command, .shift])
+        showPanelHotKey?.keyDownHandler = {
+            PanelController.shared.showPanel(makeKey: true)
+        }
+        
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         eventTap = CGEvent.tapCreate(tap: .cgSessionEventTap,
                                      place: .headInsertEventTap,
@@ -189,18 +204,18 @@ class ClipboardManager {
 
         if type == .keyDown, let nsEvent = NSEvent(cgEvent: event) {
             // cmd + shift + v
-            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command, .shift] && nsEvent.keyCode == 9 {
-                mySelf.paste()
-                // Return nil to stop propagation of this event
-                return nil
-            }
+//            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command, .shift] && nsEvent.keyCode == 9 {
+//                mySelf.paste()
+//                // Return nil to stop propagation of this event
+//                return nil
+//            }
             
             // cmd + d
-            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x02 {
-                mySelf.paste()
-                // Return nil to stop propagation of this event
-                return nil
-            }
+//            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x02 {
+//                mySelf.paste()
+//                // Return nil to stop propagation of this event
+//                return nil
+//            }
             
             // cmd + c
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x08 {
@@ -219,10 +234,10 @@ class ClipboardManager {
             }
             
             // cmd + option + v
-            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {
-                PanelController.shared.showPanel(makeKey: true)
-                return nil
-            }
+//            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.shift, .option] && nsEvent.keyCode == 9 {
+//                PanelController.shared.showPanel(makeKey: true)
+//                return nil
+//            }
         }
 
         // For all other events, pass them on

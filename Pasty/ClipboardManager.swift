@@ -47,7 +47,7 @@ class ClipboardManager {
             self?.paste()
         }
         
-        showPanelHotKey = HotKey(key: .b, modifiers: [.command, .shift])
+        showPanelHotKey = HotKey(key: .b, modifiers: [.command])
         showPanelHotKey?.keyDownHandler = {
             PanelController.shared.showPanel(makeKey: true)
         }

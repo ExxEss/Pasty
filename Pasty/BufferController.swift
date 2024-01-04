@@ -161,6 +161,8 @@ class BufferController: NSViewController {
             duplicateSelectedItem()
         case "x":
             deleteSelectedItem()
+        case "z":
+            restoreItem()
         default:
             super.keyDown(with: event)
         }
@@ -230,6 +232,10 @@ class BufferController: NSViewController {
         } else {
             // No rows left to select
         }
+    }
+    
+    @objc func restoreItem() {
+        ClipboardManager.shared.restoreItem()
     }
 }
 

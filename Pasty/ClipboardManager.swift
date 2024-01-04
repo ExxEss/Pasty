@@ -21,6 +21,7 @@ class ClipboardManager {
     private var changeCount = NSPasteboard.general.changeCount
     
     private var clipboardHistory: [String] = []
+    private var pasteHistory: [String] = []
     
     private var popped = false
     
@@ -158,10 +159,22 @@ class ClipboardManager {
             closePanel()
         }
     }
+    
+    func restoreItem() {
+        guard let item = pasteHistory.last else {
+            return
+        }
+        
+        clipboardHistory.insert(item, at: 0)
+        pasteHistory.removeLast()
+        
+        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+    }
 
     private func paste() {
         if let firstItem = clipboardHistory.first {
             clipboardHistory.removeFirst()
+            pasteHistory.append(firstItem)
             popped = true
             copyToClipboard(firstItem)
             simulatePasteAction()

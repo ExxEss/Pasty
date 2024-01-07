@@ -29,13 +29,6 @@ class BufferPanel: NSPanel {
         self.becomesKeyOnlyIfNeeded = false
         self.hidesOnDeactivate = false
         self.titlebarAppearsTransparent = true
-        
-        // Set up the visual effect view
-//        let visualEffect = NSVisualEffectView(frame: self.contentRect(forFrameRect: self.frame))
-//        visualEffect.blendingMode = .behindWindow
-//        visualEffect.state = .active
-//        visualEffect.material = .hudWindow
-//        self.contentView = visualEffect
     }
     
 }

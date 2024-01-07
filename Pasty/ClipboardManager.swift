@@ -30,7 +30,9 @@ class ClipboardManager {
     private var eventTap: CFMachPort?
     
     private var sequentialPasteHotKey: HotKey?
+    private var reverseSequentialPasteHotKey: HotKey?
     private var showPanelHotKey: HotKey?
+    private var closePanelHotKey: HotKey?
 
     private init() {}
 
@@ -47,9 +49,19 @@ class ClipboardManager {
             self?.paste()
         }
         
+        reverseSequentialPasteHotKey = HotKey(key: .d, modifiers: [.command, .shift])
+        reverseSequentialPasteHotKey?.keyDownHandler = { [weak self] in
+            self?.reversePaste()
+        }
+        
         showPanelHotKey = HotKey(key: .b, modifiers: [.command])
         showPanelHotKey?.keyDownHandler = {
             PanelController.shared.showPanel(makeKey: true)
+        }
+        
+        closePanelHotKey = HotKey(key: .b, modifiers: [.command, .shift])
+        closePanelHotKey?.keyDownHandler =  { [weak self] in
+            self?.resetBufferAndClosePanel()
         }
         
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
@@ -109,6 +121,13 @@ class ClipboardManager {
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
     }
     
+    func resetBufferWithClosePanel() {
+        if !PanelController.shared.isPanelOpen {
+            clipboardHistory = []
+            popped = false
+        }
+    }
+    
     private func closePanel() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             PanelController.shared.closePanel()
@@ -119,9 +138,14 @@ class ClipboardManager {
         return clipboardHistory
     }
     
-    func concatenateItems() {
-        let concatenatedString = clipboardHistory.joined(separator: " ")
-        clipboardHistory = [concatenatedString]
+    func copyItemFromBuffer(at index: Int) {
+        popped = true
+        copyToClipboard(clipboardHistory[index])
+    }
+    
+    func joinItems(separator: String) {
+        let unifiedString = clipboardHistory.joined(separator: separator)
+        clipboardHistory = [unifiedString]
         
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
@@ -184,6 +208,20 @@ class ClipboardManager {
             }
         }
     }
+    
+    private func reversePaste() {
+        if let lastItem = clipboardHistory.last {
+            clipboardHistory.removeLast()
+            pasteHistory.append(lastItem)
+            popped = true
+            copyToClipboard(lastItem)
+            simulatePasteAction()
+            
+            if clipboardHistory.isEmpty {
+                closePanel()
+            }
+        }
+    }
 
     private func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
@@ -231,19 +269,19 @@ class ClipboardManager {
 //            }
             
             // cmd + c
-            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x08 {
-                let count = NSPasteboard.general.changeCount
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    if count == NSPasteboard.general.changeCount {
-                        mySelf.resetBufferAndClosePanel()
-                    }
-                }
-            }
+//            if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 0x08 {
+//                let count = NSPasteboard.general.changeCount
+//                
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                    if count == NSPasteboard.general.changeCount {
+//                        mySelf.resetBufferAndClosePanel()
+//                    }
+//                }
+//            }
             
             // cmd + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBufferAndClosePanel()
+                mySelf.resetBufferWithClosePanel()
             }
             
             // cmd + option + v

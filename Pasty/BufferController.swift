@@ -159,6 +159,8 @@ class BufferController: NSViewController {
         switch characters {
         case "d":
             duplicateSelectedItem()
+        case "c":
+            copySelectedItem()
         case "x":
             deleteSelectedItem()
         case "z":
@@ -168,15 +170,24 @@ class BufferController: NSViewController {
         }
     }
     
-    @objc func concatenateItems() {
-        ClipboardManager.shared.concatenateItems()
+    @objc func joinItems(separator: String) {
+        ClipboardManager.shared.joinItems(separator: separator)
         historyView.reloadData()
+    }
+    
+    @objc func copySelectedItem() {
+        let selectedRow = historyView.selectedRow
+        guard selectedRow >= 0 else {
+            return // No selection
+        }
+        
+        ClipboardManager.shared.copyItemFromBuffer(at: selectedRow)
     }
     
     func moveSelectedItem(direction: MoveDirection) {
         let selectedRow = historyView.selectedRow
         guard selectedRow >= 0 else {
-            return // No selection
+            return
         }
 
         var newPosition = direction == .up ? selectedRow - 1 : selectedRow + 1

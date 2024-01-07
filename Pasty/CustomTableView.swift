@@ -13,8 +13,12 @@ class CustomTableView: NSTableView {
             let shiftKeyPressed = event.modifierFlags.contains(.shift)
 
             switch event.keyCode {
-            case 8:
-                viewController.concatenateItems()
+            case 38: // J key code
+                if shiftKeyPressed {
+                    viewController.joinItems(separator: "\n")
+                } else {
+                    viewController.joinItems(separator: " ")
+                }
                 return
             case 126: // Up arrow key code
                 if shiftKeyPressed {

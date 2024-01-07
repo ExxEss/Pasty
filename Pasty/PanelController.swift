@@ -8,7 +8,7 @@
 import AppKit
 import Cocoa
 
-class PanelController: NSWindowController {
+class PanelController: NSWindowController, NSWindowDelegate {
     static let shared = PanelController()
     var isPanelOpen: Bool = false
 
@@ -52,6 +52,8 @@ class PanelController: NSWindowController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(windowWillClose), name: NSWindow.willCloseNotification, object: window)
         registerForClipboardNotification()
+        
+        window?.delegate = self
     }
 
     required init?(coder: NSCoder) {
@@ -70,15 +72,17 @@ class PanelController: NSWindowController {
     }
     
     private func registerForClipboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), name: NSNotification.Name("BufferChanged"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bufferDidChange(_:)), 
+                                               name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
     @objc private func bufferDidChange(_ notification: Notification) {
         updatePanelTitle()
     }
 
-    @objc func windowWillClose(notification: Notification) {
+    func windowWillClose(_ notification: Notification) {
         // Call resetBuffer when the window is about to close
+        isPanelOpen = false
         ClipboardManager.shared.resetBuffer()
     }
 
@@ -103,7 +107,6 @@ class PanelController: NSWindowController {
     func closePanel() {
         updatePanelTitle()
         self.window?.close()
-        isPanelOpen = false
     }
 }
 

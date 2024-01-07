@@ -102,18 +102,6 @@ class ClipboardManager {
         }
     }
 
-    @objc func resetBufferAndClosePanel() {
-        resetBuffer()
-        closePanel()
-    }
-    
-    @objc func autoResetBuffer() {
-        if lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120 &&
-            !PanelController.shared.isPanelOpen {
-            resetBuffer()
-        }
-    }
-    
     func resetBuffer() {
         clipboardHistory = []
         popped = false
@@ -121,10 +109,21 @@ class ClipboardManager {
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
     }
     
-    func resetBufferWithClosePanel() {
+    @objc func resetBufferAndClosePanel() {
+        resetBuffer()
+        closePanel()
+    }
+    
+    @objc func autoResetBuffer() {
+        if lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120 {
+            resetBufferWithClosedPanel()
+        }
+    }
+    
+    func resetBufferWithClosedPanel() {
+        print(PanelController.shared.isPanelOpen)
         if !PanelController.shared.isPanelOpen {
-            clipboardHistory = []
-            popped = false
+            resetBuffer()
         }
     }
     
@@ -281,7 +280,7 @@ class ClipboardManager {
             
             // cmd + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBufferWithClosePanel()
+                mySelf.resetBufferWithClosedPanel()
             }
             
             // cmd + option + v

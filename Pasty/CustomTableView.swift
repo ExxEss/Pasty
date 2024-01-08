@@ -9,7 +9,7 @@ import Cocoa
 
 class CustomTableView: NSTableView {
     override func keyDown(with event: NSEvent) {
-        if let viewController = self.delegate as? BufferController {
+        if let viewController = self.delegate as? BufferViewController {
             let shiftKeyPressed = event.modifierFlags.contains(.shift)
 
             switch event.keyCode {

@@ -13,17 +13,17 @@ import HotKey
 let kVK_Command: CGKeyCode = 0x37
 let kVK_ANSI_V: CGKeyCode = 0x09
 
-class ClipboardManager {
-    static let shared = ClipboardManager()
+class PasteBuffer {
+    static let shared = PasteBuffer()
     
     private var pasteboard = NSPasteboard.general
     
     private var changeCount = NSPasteboard.general.changeCount
     
-    private var clipboardHistory: [String] = []
+    private var pasteBuffer: [String] = []
     private var pasteHistory: [String] = []
     
-    private var popped = false
+    private var isBufferAppendable = true
     
     var lastChangeDate: Date?
     
@@ -56,7 +56,7 @@ class ClipboardManager {
         
         showPanelHotKey = HotKey(key: .b, modifiers: [.command])
         showPanelHotKey?.keyDownHandler = {
-            PanelController.shared.showPanel(makeKey: true)
+            BufferWindowController.shared.showPanel(makeKey: true)
         }
         
         closePanelHotKey = HotKey(key: .b, modifiers: [.command, .shift])
@@ -70,7 +70,7 @@ class ClipboardManager {
                                      options: .defaultTap,
                                      eventsOfInterest: eventMask,
                                      callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
-            return ClipboardManager.hotKeyCallBack(proxy: proxy, type: type, event: event, refcon: refcon)
+            return PasteBuffer.hotKeyCallBack(proxy: proxy, type: type, event: event, refcon: refcon)
         },
                                      userInfo: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
         
@@ -87,30 +87,30 @@ class ClipboardManager {
             lastChangeDate = Date()
             
             if let text = pasteboard.string(forType: .string) {
-                if !popped {
-                    clipboardHistory.append(text)
+                if isBufferAppendable {
+                    pasteBuffer.append(text)
                 } else {
-                    popped = false
+                    isBufferAppendable = true
                 }
                 
                 NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: text)
 
-                if clipboardHistory.count > 2 {
-                    PanelController.shared.showPanel()
+                if pasteBuffer.count > 2 {
+                    BufferWindowController.shared.showPanel()
                 }
             }
         }
     }
 
     func resetBuffer() {
-        clipboardHistory = []
-        popped = false
+        pasteBuffer = []
+        isBufferAppendable = true
         
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: [])
     }
     
     @objc func resetBufferAndClosePanel() {
-        let delay: Double = clipboardHistory.count > 0 ? 1 : 0
+        let delay: Double = pasteBuffer.count > 0 ? 1 : 0.2
         resetBuffer()
         closePanel(delay: delay)
     }
@@ -122,8 +122,8 @@ class ClipboardManager {
     }
     
     func resetBufferWithClosedPanel() {
-        print(PanelController.shared.isPanelOpen)
-        if !PanelController.shared.isPanelOpen {
+        print(BufferWindowController.shared.isPanelOpen)
+        if !BufferWindowController.shared.isPanelOpen {
             resetBuffer()
         }
     }
@@ -131,56 +131,56 @@ class ClipboardManager {
     private func closePanel(delay: Double? = 1) {
         let delayInterval = delay ?? 1
         DispatchQueue.main.asyncAfter(deadline: .now() + delayInterval) {
-            PanelController.shared.closePanel()
+            BufferWindowController.shared.closePanel()
         }
     }
 
     func getHistory() -> [String] {
-        return clipboardHistory
+        return pasteBuffer
     }
     
     func copyItemFromBuffer(at index: Int) {
-        popped = true
-        copyToClipboard(clipboardHistory[index])
+        isBufferAppendable = false
+        copyToClipboard(pasteBuffer[index])
     }
     
     func joinItems(separator: String) {
-        let unifiedString = clipboardHistory.joined(separator: separator)
-        clipboardHistory = [unifiedString]
+        let unifiedString = pasteBuffer.joined(separator: separator)
+        pasteBuffer = [unifiedString]
         
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
     func moveItem(from oldIndex: Int, to newIndex: Int) {
         guard oldIndex != newIndex,
-              oldIndex >= 0, oldIndex < clipboardHistory.count,
-              newIndex >= 0, newIndex < clipboardHistory.count else {
+              oldIndex >= 0, oldIndex < pasteBuffer.count,
+              newIndex >= 0, newIndex < pasteBuffer.count else {
             return
         }
         
-        let item = clipboardHistory.remove(at: oldIndex)
-        clipboardHistory.insert(item, at: newIndex)
+        let item = pasteBuffer.remove(at: oldIndex)
+        pasteBuffer.insert(item, at: newIndex)
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
     func duplicateItem(_ item: String, at index: Int) {
-        guard index >= 0 && index < clipboardHistory.count else {
+        guard index >= 0 && index < pasteBuffer.count else {
             return // Index out of bounds check
         }
         
-        clipboardHistory.insert(item, at: index + 1)
+        pasteBuffer.insert(item, at: index + 1)
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
     func deleteItem(at index: Int) {
-        guard index >= 0 && index < clipboardHistory.count else {
+        guard index >= 0 && index < pasteBuffer.count else {
             return // Index out of bounds check
         }
         
-        clipboardHistory.remove(at: index)
+        pasteBuffer.remove(at: index)
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
         
-        if clipboardHistory.count == 0 {
+        if pasteBuffer.count == 0 {
             closePanel()
         }
     }
@@ -190,35 +190,35 @@ class ClipboardManager {
             return
         }
         
-        clipboardHistory.insert(item, at: 0)
+        pasteBuffer.insert(item, at: 0)
         pasteHistory.removeLast()
         
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
 
     private func paste() {
-        if let firstItem = clipboardHistory.first {
-            clipboardHistory.removeFirst()
+        if let firstItem = pasteBuffer.first {
+            pasteBuffer.removeFirst()
             pasteHistory.append(firstItem)
-            popped = true
+            isBufferAppendable = false
             copyToClipboard(firstItem)
             simulatePasteAction()
             
-            if clipboardHistory.isEmpty {
+            if pasteBuffer.isEmpty {
                 closePanel()
             }
         }
     }
     
     private func reversePaste() {
-        if let lastItem = clipboardHistory.last {
-            clipboardHistory.removeLast()
+        if let lastItem = pasteBuffer.last {
+            pasteBuffer.removeLast()
             pasteHistory.append(lastItem)
-            popped = true
+            isBufferAppendable = false
             copyToClipboard(lastItem)
             simulatePasteAction()
             
-            if clipboardHistory.isEmpty {
+            if pasteBuffer.isEmpty {
                 closePanel()
             }
         }
@@ -252,7 +252,7 @@ class ClipboardManager {
     private static func hotKeyCallBack(proxy: CGEventTapProxy, type: CGEventType, 
                                        event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
         guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
-        let mySelf = Unmanaged<ClipboardManager>.fromOpaque(refcon).takeUnretainedValue()
+        let mySelf = Unmanaged<PasteBuffer>.fromOpaque(refcon).takeUnretainedValue()
 
         if type == .keyDown, let nsEvent = NSEvent(cgEvent: event) {
             // cmd + shift + v

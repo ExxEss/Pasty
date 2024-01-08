@@ -11,14 +11,14 @@ enum MoveDirection {
     case up, down
 }
 
-class BufferController: NSViewController {
+class BufferViewController: NSViewController {
     private var historyView: CustomTableView!
     private var clipboardHistory: [String] = []
     private var clipboardColumn: NSTableColumn?
 
     override func loadView() {
         // Load the clipboard history first to know how many items we have.
-        clipboardHistory = ClipboardManager.shared.getHistory()
+        clipboardHistory = PasteBuffer.shared.getHistory()
         
         // Calculate the height based on the number of items.
         let rowHeight: CGFloat = 30
@@ -116,7 +116,7 @@ class BufferController: NSViewController {
     }
 
     private func reloadHistory() {
-        clipboardHistory = ClipboardManager.shared.getHistory()
+        clipboardHistory = PasteBuffer.shared.getHistory()
         historyView.reloadData()
         
         clipboardColumn?.title = "Items (\(clipboardHistory.count))"
@@ -171,7 +171,7 @@ class BufferController: NSViewController {
     }
     
     @objc func joinItems(separator: String) {
-        ClipboardManager.shared.joinItems(separator: separator)
+        PasteBuffer.shared.joinItems(separator: separator)
         historyView.reloadData()
     }
     
@@ -181,7 +181,7 @@ class BufferController: NSViewController {
             return // No selection
         }
         
-        ClipboardManager.shared.copyItemFromBuffer(at: selectedRow)
+        PasteBuffer.shared.copyItemFromBuffer(at: selectedRow)
     }
     
     func moveSelectedItem(direction: MoveDirection) {
@@ -200,7 +200,7 @@ class BufferController: NSViewController {
             newPosition = clipboardHistory.count - 1
         }
 
-        ClipboardManager.shared.moveItem(from: selectedRow, to: newPosition)
+        PasteBuffer.shared.moveItem(from: selectedRow, to: newPosition)
 
         // Reload the table view and update selection
         historyView.reloadData()
@@ -213,8 +213,8 @@ class BufferController: NSViewController {
             return // No selection
         }
 
-        let itemToDuplicate = ClipboardManager.shared.getHistory()[selectedRow]
-        ClipboardManager.shared.duplicateItem(itemToDuplicate, at: selectedRow)
+        let itemToDuplicate = PasteBuffer.shared.getHistory()[selectedRow]
+        PasteBuffer.shared.duplicateItem(itemToDuplicate, at: selectedRow)
 
         // Reload the table view and select the new duplicated row
         historyView.reloadData()
@@ -230,13 +230,13 @@ class BufferController: NSViewController {
             return // No selection
         }
         
-        ClipboardManager.shared.deleteItem(at: selectedRow)
+        PasteBuffer.shared.deleteItem(at: selectedRow)
         
         // Reload the table view
         historyView.reloadData()
         
         // Determine the new row to select
-        let newRowCount = ClipboardManager.shared.getHistory().count
+        let newRowCount = PasteBuffer.shared.getHistory().count
         if newRowCount > 0 {
             let newRowToSelect = selectedRow >= newRowCount ? newRowCount - 1 : selectedRow
             historyView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
@@ -246,11 +246,11 @@ class BufferController: NSViewController {
     }
     
     @objc func restoreItem() {
-        ClipboardManager.shared.restoreItem()
+        PasteBuffer.shared.restoreItem()
     }
 }
 
-extension BufferController: NSTableViewDataSource, NSTableViewDelegate {
+extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
     // Implement the data source and delegate methods to display the clipboard history
     func numberOfRows(in tableView: NSTableView) -> Int {
         return clipboardHistory.count

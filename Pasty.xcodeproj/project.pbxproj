@@ -12,9 +12,9 @@
 		53DAD4772B2D394B00213CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53DAD4762B2D394B00213CC2 /* Assets.xcassets */; };
 		53DAD47A2B2D394B00213CC2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53DAD4792B2D394B00213CC2 /* Preview Assets.xcassets */; };
 		53DAD4822B2D39AC00213CC2 /* BufferPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4812B2D39AC00213CC2 /* BufferPanel.swift */; };
-		53DAD4842B2D39E500213CC2 /* PanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4832B2D39E500213CC2 /* PanelController.swift */; };
-		53DAD4862B2D3A1C00213CC2 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */; };
-		53DAD4882B2D3A5A00213CC2 /* BufferController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4872B2D3A5A00213CC2 /* BufferController.swift */; };
+		53DAD4842B2D39E500213CC2 /* BufferWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4832B2D39E500213CC2 /* BufferWindowController.swift */; };
+		53DAD4862B2D3A1C00213CC2 /* PasteBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4852B2D3A1C00213CC2 /* PasteBuffer.swift */; };
+		53DAD4882B2D3A5A00213CC2 /* BufferViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4872B2D3A5A00213CC2 /* BufferViewController.swift */; };
 		53F3D21D2B46176E00ACB57F /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 53F3D21C2B46176E00ACB57F /* HotKey */; };
 /* End PBXBuildFile section */
 
@@ -26,9 +26,9 @@
 		53DAD4792B2D394B00213CC2 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		53DAD47B2B2D394B00213CC2 /* Pasty.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pasty.entitlements; sourceTree = "<group>"; };
 		53DAD4812B2D39AC00213CC2 /* BufferPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferPanel.swift; sourceTree = "<group>"; };
-		53DAD4832B2D39E500213CC2 /* PanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelController.swift; sourceTree = "<group>"; };
-		53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
-		53DAD4872B2D3A5A00213CC2 /* BufferController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferController.swift; sourceTree = "<group>"; };
+		53DAD4832B2D39E500213CC2 /* BufferWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferWindowController.swift; sourceTree = "<group>"; };
+		53DAD4852B2D3A1C00213CC2 /* PasteBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteBuffer.swift; sourceTree = "<group>"; };
+		53DAD4872B2D3A5A00213CC2 /* BufferViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,10 +63,10 @@
 			isa = PBXGroup;
 			children = (
 				53DAD4722B2D394900213CC2 /* PastyApp.swift */,
+				53DAD4852B2D3A1C00213CC2 /* PasteBuffer.swift */,
 				53DAD4812B2D39AC00213CC2 /* BufferPanel.swift */,
-				53DAD4832B2D39E500213CC2 /* PanelController.swift */,
-				53DAD4852B2D3A1C00213CC2 /* ClipboardManager.swift */,
-				53DAD4872B2D3A5A00213CC2 /* BufferController.swift */,
+				53DAD4832B2D39E500213CC2 /* BufferWindowController.swift */,
+				53DAD4872B2D3A5A00213CC2 /* BufferViewController.swift */,
 				531259272B42BB6400D66761 /* CustomTableView.swift */,
 				53DAD4762B2D394B00213CC2 /* Assets.xcassets */,
 				53DAD47B2B2D394B00213CC2 /* Pasty.entitlements */,
@@ -159,10 +159,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				53DAD4862B2D3A1C00213CC2 /* ClipboardManager.swift in Sources */,
-				53DAD4842B2D39E500213CC2 /* PanelController.swift in Sources */,
+				53DAD4862B2D3A1C00213CC2 /* PasteBuffer.swift in Sources */,
+				53DAD4842B2D39E500213CC2 /* BufferWindowController.swift in Sources */,
 				531259282B42BB6400D66761 /* CustomTableView.swift in Sources */,
-				53DAD4882B2D3A5A00213CC2 /* BufferController.swift in Sources */,
+				53DAD4882B2D3A5A00213CC2 /* BufferViewController.swift in Sources */,
 				53DAD4822B2D39AC00213CC2 /* BufferPanel.swift in Sources */,
 				53DAD4732B2D394900213CC2 /* PastyApp.swift in Sources */,
 			);

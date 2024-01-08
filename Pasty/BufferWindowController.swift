@@ -8,8 +8,8 @@
 import AppKit
 import Cocoa
 
-class PanelController: NSWindowController, NSWindowDelegate {
-    static let shared = PanelController()
+class BufferWindowController: NSWindowController, NSWindowDelegate {
+    static let shared = BufferWindowController()
     var isPanelOpen: Bool = false
 
     private init() {
@@ -37,7 +37,7 @@ class PanelController: NSWindowController, NSWindowDelegate {
         
         super.init(window: panel)
         
-        let count = ClipboardManager.shared.getHistory().count
+        let count = PasteBuffer.shared.getHistory().count
         panel.title = "Items to paste: \(count)"
         panel.titlebarAppearsTransparent = true
 
@@ -47,7 +47,7 @@ class PanelController: NSWindowController, NSWindowDelegate {
         panel.becomesKeyOnlyIfNeeded = false
         panel.hidesOnDeactivate = false
         
-        let contentViewController = BufferController()
+        let contentViewController = BufferViewController()
         panel.contentViewController = contentViewController
         
         NotificationCenter.default.addObserver(self, selector: #selector(windowWillClose), name: NSWindow.willCloseNotification, object: window)
@@ -65,7 +65,7 @@ class PanelController: NSWindowController, NSWindowDelegate {
     }
     
     func updatePanelTitle() {
-        let count = ClipboardManager.shared.getHistory().count
+        let count = PasteBuffer.shared.getHistory().count
         if let panel = window as? BufferPanel {
             panel.title = "Items to paste: \(count)"
         }
@@ -83,7 +83,7 @@ class PanelController: NSWindowController, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         // Call resetBuffer when the window is about to close
         isPanelOpen = false
-        ClipboardManager.shared.resetBuffer()
+        PasteBuffer.shared.resetBuffer()
     }
 
     func showPanel(makeKey: Bool = false) {

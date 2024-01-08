@@ -28,7 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        ClipboardManager.shared.startMonitoring()
+        PasteBuffer.shared.startMonitoring()
         
         // Create the status bar item
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -53,7 +53,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func openPanel() {
         NSApp.activate(ignoringOtherApps: true)
-        PanelController.shared.showPanel()
+        BufferWindowController.shared.showPanel()
     }
 
     @objc func quitApp() {

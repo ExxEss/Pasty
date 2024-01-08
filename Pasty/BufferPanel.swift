@@ -30,5 +30,4 @@ class BufferPanel: NSPanel {
         self.hidesOnDeactivate = false
         self.titlebarAppearsTransparent = true
     }
-    
 }

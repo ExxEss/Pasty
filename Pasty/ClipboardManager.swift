@@ -110,8 +110,9 @@ class ClipboardManager {
     }
     
     @objc func resetBufferAndClosePanel() {
+        let delay: Double = clipboardHistory.count > 0 ? 1 : 0
         resetBuffer()
-        closePanel()
+        closePanel(delay: delay)
     }
     
     @objc func autoResetBuffer() {
@@ -127,8 +128,9 @@ class ClipboardManager {
         }
     }
     
-    private func closePanel() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+    private func closePanel(delay: Double? = 1) {
+        let delayInterval = delay ?? 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + delayInterval) {
             PanelController.shared.closePanel()
         }
     }

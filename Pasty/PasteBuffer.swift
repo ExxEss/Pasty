@@ -122,7 +122,6 @@ class PasteBuffer {
     }
     
     func resetBufferWithClosedPanel() {
-        print(BufferWindowController.shared.isPanelOpen)
         if !BufferWindowController.shared.isPanelOpen {
             resetBuffer()
         }

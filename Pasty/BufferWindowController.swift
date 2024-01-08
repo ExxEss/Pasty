@@ -11,6 +11,10 @@ import Cocoa
 class BufferWindowController: NSWindowController, NSWindowDelegate {
     static let shared = BufferWindowController()
     var isPanelOpen: Bool = false
+    
+    var isActive: Bool {
+        return self.window?.isKeyWindow ?? false
+    }
 
     private init() {
         let panelWidth: CGFloat = 300

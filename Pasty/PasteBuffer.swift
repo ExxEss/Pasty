@@ -31,8 +31,7 @@ class PasteBuffer {
     
     private var sequentialPasteHotKey: HotKey?
     private var reverseSequentialPasteHotKey: HotKey?
-    private var showPanelHotKey: HotKey?
-    private var closePanelHotKey: HotKey?
+    private var activateOrDeactivateBufferPanelHotKey: HotKey?
 
     private init() {}
 
@@ -54,14 +53,9 @@ class PasteBuffer {
             self?.reversePaste()
         }
         
-        showPanelHotKey = HotKey(key: .b, modifiers: [.command])
-        showPanelHotKey?.keyDownHandler = {
-            BufferWindowController.shared.showPanel(makeKey: true)
-        }
-        
-        closePanelHotKey = HotKey(key: .b, modifiers: [.command, .shift])
-        closePanelHotKey?.keyDownHandler =  { [weak self] in
-            self?.resetBufferAndClosePanel()
+        activateOrDeactivateBufferPanelHotKey = HotKey(key: .b, modifiers: [.command])
+        activateOrDeactivateBufferPanelHotKey?.keyDownHandler =  { [weak self] in
+            self?.activateOrDeactivateBufferPanel()
         }
         
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
@@ -113,6 +107,14 @@ class PasteBuffer {
         let delay: Double = pasteBuffer.count > 0 ? 1 : 0.2
         resetBuffer()
         closePanel(delay: delay)
+    }
+    
+    @objc func activateOrDeactivateBufferPanel() {
+        if !BufferWindowController.shared.isPanelOpen || !BufferWindowController.shared.isActive {
+            BufferWindowController.shared.showPanel(makeKey: true)
+        } else if BufferWindowController.shared.isActive {
+            NSApp.deactivate()
+        }
     }
     
     @objc func autoResetBuffer() {

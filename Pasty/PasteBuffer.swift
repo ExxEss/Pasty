@@ -32,6 +32,8 @@ class PasteBuffer {
     private var sequentialPasteHotKey: HotKey?
     private var reverseSequentialPasteHotKey: HotKey?
     private var activateOrDeactivateBufferPanelHotKey: HotKey?
+    private var popFirstHotKey: HotKey?
+    private var popLastHotKey: HotKey?
 
     private init() {}
 
@@ -56,6 +58,20 @@ class PasteBuffer {
         activateOrDeactivateBufferPanelHotKey = HotKey(key: .b, modifiers: [.command])
         activateOrDeactivateBufferPanelHotKey?.keyDownHandler =  { [weak self] in
             self?.activateOrDeactivateBufferPanel()
+        }
+        
+        popFirstHotKey = HotKey(key: .p, modifiers: [.control])
+        popFirstHotKey?.keyDownHandler = { [weak self] in
+            if self?.pasteBuffer.count ?? 0 > 0 {
+                self?.deleteItem(at: 0)
+            }
+        }
+        
+        popLastHotKey = HotKey(key: .p, modifiers: [.control, .shift])
+        popLastHotKey?.keyDownHandler =  { [weak self] in
+            if self?.pasteBuffer.count ?? 0 > 0 {
+                self?.deleteItem(at: ((self?.pasteBuffer.count)! - 1))
+            }
         }
         
         let eventMask = CGEventMask(1 << CGEventType.keyDown.rawValue)
@@ -89,7 +105,7 @@ class PasteBuffer {
                 
                 NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: text)
 
-                if pasteBuffer.count > 2 {
+                if pasteBuffer.count > 1 {
                     BufferWindowController.shared.showPanel()
                 }
             }
@@ -280,6 +296,11 @@ class PasteBuffer {
 //                    }
 //                }
 //            }
+            
+            // Escape key
+            if nsEvent.keyCode == 53 {
+                mySelf.resetBufferAndClosePanel()
+            }
             
             // cmd + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {

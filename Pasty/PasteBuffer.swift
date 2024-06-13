@@ -21,6 +21,8 @@ class PasteBuffer {
     private var changeCount = NSPasteboard.general.changeCount
     
     private var pasteBuffer: [String] = []
+    private var showBufferThreshold = 2
+    
     private var pasteHistory: [String] = []
     
     private var isBufferAppendable = true
@@ -105,7 +107,7 @@ class PasteBuffer {
                 
                 NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: text)
 
-                if pasteBuffer.count > 1 {
+                if pasteBuffer.count >= showBufferThreshold {
                     BufferWindowController.shared.showPanel()
                 }
             }
@@ -241,10 +243,54 @@ class PasteBuffer {
         }
     }
 
+    private func copyToClipboard1(_ text: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        
+        // Create a new pasteboard item
+        let pasteboardItem = NSPasteboardItem()
+        
+        // Set the main content as a string
+        pasteboardItem.setString(text, forType: .string)
+        
+        // Add custom metadata
+        let deviceName = Host.current().localizedName ?? "Unknown Device"
+        let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Unknown App"
+        
+        let metadata = "Device: \(deviceName)\nApp: \(appName)"
+        
+        // Use a custom type for the metadata
+        let metadataType = NSPasteboard.PasteboardType("com.yourApp.metadata")
+        pasteboardItem.setString(metadata, forType: metadataType)
+        
+        // Write the item to the pasteboard
+        pasteboard.writeObjects([pasteboardItem])
+        
+        // readMetadataFromClipboard()
+    }
+    
     private func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
+    }
+    
+    // Function to read metadata from the clipboard
+    private func readMetadataFromClipboard() -> String? {
+        let pasteboard = NSPasteboard.general
+        
+        // Define the custom type for the metadata
+        let metadataType = NSPasteboard.PasteboardType("com.yourApp.metadata")
+        
+        if let items = pasteboard.pasteboardItems {
+            for item in items {
+                if let metadata = item.string(forType: metadataType) {
+                    print("Metadata", metadata)
+                    return metadata
+                }
+            }
+        }
+        return nil
     }
     
     private func simulateKeyPress(keyCode: CGKeyCode, keyDown: Bool, flags: CGEventFlags = []) {
@@ -299,7 +345,12 @@ class PasteBuffer {
             
             // Escape key
             if nsEvent.keyCode == 53 {
+                let count = mySelf.pasteBuffer.count
                 mySelf.resetBufferAndClosePanel()
+                
+                if count > 0 {
+                    return nil
+                }
             }
             
             // cmd + v

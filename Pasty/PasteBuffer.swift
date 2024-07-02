@@ -7,6 +7,7 @@
 
 import Cocoa
 import CoreGraphics
+import AVFoundation
 import HotKey
 
 
@@ -14,6 +15,8 @@ let kVK_Command: CGKeyCode = 0x37
 let kVK_ANSI_V: CGKeyCode = 0x09
 
 class PasteBuffer {
+    private var audioPlayer: AVAudioPlayer?
+
     static let shared = PasteBuffer()
     
     private var pasteboard = NSPasteboard.general
@@ -33,6 +36,7 @@ class PasteBuffer {
     
     private var sequentialPasteHotKey: HotKey?
     private var reverseSequentialPasteHotKey: HotKey?
+    private var pasteNthHotKeys: [HotKey]?
     private var activateOrDeactivateBufferPanelHotKey: HotKey?
     private var popFirstHotKey: HotKey?
     private var popLastHotKey: HotKey?
@@ -47,14 +51,24 @@ class PasteBuffer {
     }
 
     private func setupHotKey() {
-        sequentialPasteHotKey = HotKey(key: .d, modifiers: [.command])
+        sequentialPasteHotKey = HotKey(key: .e, modifiers: [.command])
         sequentialPasteHotKey?.keyDownHandler = { [weak self] in
             self?.paste()
         }
         
-        reverseSequentialPasteHotKey = HotKey(key: .d, modifiers: [.command, .shift])
+        reverseSequentialPasteHotKey = HotKey(key: .d, modifiers: [.command])
         reverseSequentialPasteHotKey?.keyDownHandler = { [weak self] in
             self?.reversePaste()
+        }
+        
+        pasteNthHotKeys = []
+        let keys: [Key] = [.one, .two, .three, .four, .five, .six, .seven, .eight, .nine]
+        for (index, key) in keys.enumerated() {
+            let hotKey = HotKey(key: key, modifiers: [.control, .shift])
+            hotKey.keyDownHandler = { [weak self] in
+                self?.pasteNth(index)
+            }
+            pasteNthHotKeys?.append(hotKey)
         }
         
         activateOrDeactivateBufferPanelHotKey = HotKey(key: .b, modifiers: [.command])
@@ -97,10 +111,11 @@ class PasteBuffer {
         if pasteboard.changeCount != changeCount {
             changeCount = pasteboard.changeCount
             lastChangeDate = Date()
-            
+                            
             if let text = pasteboard.string(forType: .string) {
                 if isBufferAppendable {
                     pasteBuffer.append(text)
+                    playCopySound()
                 } else {
                     isBufferAppendable = true
                 }
@@ -110,6 +125,18 @@ class PasteBuffer {
                 if pasteBuffer.count >= showBufferThreshold {
                     BufferWindowController.shared.showPanel()
                 }
+            }
+        }
+    }
+    
+    private func playCopySound() {
+        if let soundURL = Bundle.main.url(forResource: "short-wind", withExtension: "wav") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
+                audioPlayer?.volume = 0.15
+                audioPlayer?.play()
+            } catch {
+                print("Failed to initialize AVAudioPlayer: \(error.localizedDescription)")
             }
         }
     }
@@ -136,8 +163,12 @@ class PasteBuffer {
     }
     
     @objc func autoResetBuffer() {
-        if lastChangeDate != nil && Date().timeIntervalSince(lastChangeDate!) >= 120 {
-            resetBufferWithClosedPanel()
+        if lastChangeDate != nil {
+            if Date().timeIntervalSince(lastChangeDate!) >= 600 {
+                resetBuffer()
+            } else if Date().timeIntervalSince(lastChangeDate!) >= 120 {
+                resetBufferWithClosedPanel()
+            }
         }
     }
     
@@ -226,6 +257,20 @@ class PasteBuffer {
             if pasteBuffer.isEmpty {
                 closePanel()
             }
+        }
+    }
+
+    private func pasteNth(_ index: Int) {
+        guard index >= 0 && index < pasteBuffer.count else { return }
+        let item = pasteBuffer[index]
+        pasteBuffer.remove(at: index)
+        pasteHistory.append(item)
+        isBufferAppendable = false
+        copyToClipboard(item)
+        simulatePasteAction()
+        
+        if pasteBuffer.isEmpty {
+            closePanel()
         }
     }
     

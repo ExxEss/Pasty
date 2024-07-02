@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import AudioToolbox
 
 @main
 struct PastyApp: App {
@@ -27,6 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AudioServicesPlaySystemSound(1002)
         NSApp.setActivationPolicy(.accessory)
         PasteBuffer.shared.startMonitoring()
         

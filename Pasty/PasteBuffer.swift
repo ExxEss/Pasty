@@ -20,7 +20,6 @@ class PasteBuffer {
     static let shared = PasteBuffer()
     
     private var pasteboard = NSPasteboard.general
-    private var contentType = UUID().uuidString
     
     private var changeCount = NSPasteboard.general.changeCount
     
@@ -31,6 +30,7 @@ class PasteBuffer {
     
     private var isBufferAppendable = true
     
+    private var lastUserEventDate: Date?
     var lastChangeDate: Date?
     
     private var eventTap: CFMachPort?
@@ -45,6 +45,12 @@ class PasteBuffer {
     private init() {}
 
     func startMonitoring() {
+        NSEvent.addGlobalMonitorForEvents(matching: [
+            .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown, .mouseMoved, .scrollWheel
+        ]) { event in
+            self.lastUserEventDate = Date()
+        }
+        
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
         Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(autoResetBuffer), userInfo: nil, repeats: true)
         
@@ -113,10 +119,13 @@ class PasteBuffer {
             changeCount = pasteboard.changeCount
             lastChangeDate = Date()
             
+            if !isLocalCopy(at: lastChangeDate!) {
+                return
+            }
+            
             if let text = pasteboard.string(forType: .string) {
                 if isBufferAppendable {
-//                    pasteBuffer.append(text)
-                    copyToClipboard(text)
+                    pasteBuffer.append(text)
                     playCopySound()
                 } else {
                     isBufferAppendable = true
@@ -165,12 +174,8 @@ class PasteBuffer {
     }
     
     @objc func autoResetBuffer() {
-        if lastChangeDate != nil {
-            if Date().timeIntervalSince(lastChangeDate!) >= 600 {
-                resetBufferAndClosePanel()
-            } else if Date().timeIntervalSince(lastChangeDate!) >= 60 {
-                resetBufferWithClosedPanel()
-            }
+        if Date().timeIntervalSince(lastChangeDate!) >= 60 {
+            resetBufferWithClosedPanel()
         }
     }
     
@@ -290,54 +295,21 @@ class PasteBuffer {
         }
     }
 
-    private func copyToClipboard(_ text: String) {
-        let pasteboard = NSPasteboard.general
-//        pasteboard.clearContents()
+    private func isLocalCopy(at pasteboardChangeTime: Date) -> Bool {
+        guard let lastEventTime = lastUserEventDate else {
+            return false
+        }
         
-        // Create a new pasteboard item
-        let pasteboardItem = NSPasteboardItem()
+        let timeDifference = pasteboardChangeTime.timeIntervalSince(lastEventTime)
+        let threshold: TimeInterval = 1.0
         
-        // Set the main content as a string
-        pasteboardItem.setString(text, forType: .string)
-        
-        // Add custom metadata
-        let deviceName = Host.current().localizedName ?? "Unknown Device"
-        let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "Unknown App"
-        
-        let metadata = "Device: \(deviceName)\nApp: \(appName)"
-        
-        // Use a custom type for the metadata
-        let metadataType = NSPasteboard.PasteboardType("com.pasty.metadata")
-        pasteboardItem.setString(metadata, forType: metadataType)
-        
-        // Write the item to the pasteboard
-        pasteboard.writeObjects([pasteboardItem])
-        
-        readMetadataFromClipboard()
+        return timeDifference < threshold
     }
     
-    private func copyToClipboard2(_ text: String) {
+    private func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
-    }
-    
-    // Function to read metadata from the clipboard
-    private func readMetadataFromClipboard() -> String? {
-        let pasteboard = NSPasteboard.general
-        
-        // Define the custom type for the metadata
-        let metadataType = NSPasteboard.PasteboardType("com.pasty.metadata")
-        
-        if let items = pasteboard.pasteboardItems {
-            for item in items {
-                if let metadata = item.string(forType: metadataType) {
-                    print("Metadata", metadata)
-                    return metadata
-                }
-            }
-        }
-        return nil
     }
     
     private func simulateKeyPress(keyCode: CGKeyCode, keyDown: Bool, flags: CGEventFlags = []) {

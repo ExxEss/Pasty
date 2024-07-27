@@ -20,6 +20,7 @@ class PasteBuffer {
     static let shared = PasteBuffer()
     
     private var pasteboard = NSPasteboard.general
+    private var contentType = UUID().uuidString
     
     private var changeCount = NSPasteboard.general.changeCount
     
@@ -45,7 +46,7 @@ class PasteBuffer {
 
     func startMonitoring() {
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
-        Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(autoResetBuffer), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(autoResetBuffer), userInfo: nil, repeats: true)
         
         self.setupHotKey()
     }
@@ -111,10 +112,11 @@ class PasteBuffer {
         if pasteboard.changeCount != changeCount {
             changeCount = pasteboard.changeCount
             lastChangeDate = Date()
-                            
+            
             if let text = pasteboard.string(forType: .string) {
                 if isBufferAppendable {
-                    pasteBuffer.append(text)
+//                    pasteBuffer.append(text)
+                    copyToClipboard(text)
                     playCopySound()
                 } else {
                     isBufferAppendable = true
@@ -165,8 +167,8 @@ class PasteBuffer {
     @objc func autoResetBuffer() {
         if lastChangeDate != nil {
             if Date().timeIntervalSince(lastChangeDate!) >= 600 {
-                resetBuffer()
-            } else if Date().timeIntervalSince(lastChangeDate!) >= 120 {
+                resetBufferAndClosePanel()
+            } else if Date().timeIntervalSince(lastChangeDate!) >= 60 {
                 resetBufferWithClosedPanel()
             }
         }
@@ -288,9 +290,9 @@ class PasteBuffer {
         }
     }
 
-    private func copyToClipboard1(_ text: String) {
+    private func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
+//        pasteboard.clearContents()
         
         // Create a new pasteboard item
         let pasteboardItem = NSPasteboardItem()
@@ -305,16 +307,16 @@ class PasteBuffer {
         let metadata = "Device: \(deviceName)\nApp: \(appName)"
         
         // Use a custom type for the metadata
-        let metadataType = NSPasteboard.PasteboardType("com.yourApp.metadata")
+        let metadataType = NSPasteboard.PasteboardType("com.pasty.metadata")
         pasteboardItem.setString(metadata, forType: metadataType)
         
         // Write the item to the pasteboard
         pasteboard.writeObjects([pasteboardItem])
         
-        // readMetadataFromClipboard()
+        readMetadataFromClipboard()
     }
     
-    private func copyToClipboard(_ text: String) {
+    private func copyToClipboard2(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
@@ -325,7 +327,7 @@ class PasteBuffer {
         let pasteboard = NSPasteboard.general
         
         // Define the custom type for the metadata
-        let metadataType = NSPasteboard.PasteboardType("com.yourApp.metadata")
+        let metadataType = NSPasteboard.PasteboardType("com.pasty.metadata")
         
         if let items = pasteboard.pasteboardItems {
             for item in items {

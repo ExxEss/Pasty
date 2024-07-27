@@ -43,7 +43,6 @@ class BufferViewController: NSViewController {
 
         self.view = newView
         
-        // Your existing setup code.
         setupTableView()
         registerForClipboardNotification()
         
@@ -117,8 +116,6 @@ class BufferViewController: NSViewController {
 
     private func reloadHistory() {
         clipboardHistory = PasteBuffer.shared.getHistory()
-        historyView.reloadData()
-        
         clipboardColumn?.title = "Items (\(clipboardHistory.count))"
 
         // Calculate the new height of the table view
@@ -146,7 +143,9 @@ class BufferViewController: NSViewController {
                     context.duration = 0.3
                     context.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
                     window.animator().setFrame(newWindowFrame, display: true, animate: true)
-                }, completionHandler: {})
+                }, completionHandler: {
+                    self.historyView.reloadData()
+                })
             }
         }
     }

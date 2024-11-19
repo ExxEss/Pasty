@@ -41,7 +41,7 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
         
         super.init(window: panel)
         
-        let count = PasteBuffer.shared.getHistory().count
+        let count = PasteBuffer.shared.getBuffer().count
         panel.title = "Items to paste: \(count)"
         panel.titlebarAppearsTransparent = true
 
@@ -69,7 +69,7 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     }
     
     func updatePanelTitle() {
-        let count = PasteBuffer.shared.getHistory().count
+        let count = PasteBuffer.shared.getBuffer().count
         if let panel = window as? BufferPanel {
             panel.title = "Items to paste: \(count)"
         }

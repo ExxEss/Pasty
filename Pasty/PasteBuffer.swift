@@ -192,7 +192,7 @@ class PasteBuffer {
         }
     }
 
-    func getHistory() -> [String] {
+    func getBuffer() -> [String] {
         return pasteBuffer
     }
     
@@ -268,17 +268,17 @@ class PasteBuffer {
     }
 
     private func pasteNth(_ index: Int) {
-        guard index >= 0 && index < pasteBuffer.count else { return }
-        let item = pasteBuffer[index]
-        pasteBuffer.remove(at: index)
+        guard index >= 0 else { return }
+        
+        let calculatedIndex = index > pasteBuffer.count - 1
+        ? pasteBuffer.count - 1
+        : index
+        
+        let item = pasteBuffer[calculatedIndex]
         pasteHistory.append(item)
         isBufferAppendable = false
         copyToClipboard(item)
         simulatePasteAction()
-        
-        if pasteBuffer.isEmpty {
-            closePanel()
-        }
     }
     
     private func reversePaste() {
@@ -374,7 +374,7 @@ class PasteBuffer {
             
             // cmd + v
             if nsEvent.modifierFlags.intersection(.deviceIndependentFlagsMask) == [.command] && nsEvent.keyCode == 9 {
-                mySelf.resetBufferWithClosedPanel()
+                mySelf.resetBufferAndClosePanel()
             }
             
             // cmd + option + v

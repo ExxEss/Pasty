@@ -1,6 +1,5 @@
 //
-//  ClipboardHistoryViewController.swift
-//  TestPanel
+//  BufferViewController.swift
 //
 //  Created by EssExx on 15/12/23.
 //
@@ -12,17 +11,16 @@ enum MoveDirection {
 }
 
 class BufferViewController: NSViewController {
-    private var historyView: CustomTableView!
-    private var clipboardHistory: [String] = []
+    private var bufferView: CustomTableView!
+    private var buffer: [String] = []
     private var clipboardColumn: NSTableColumn?
 
     override func loadView() {
-        // Load the clipboard history first to know how many items we have.
-        clipboardHistory = PasteBuffer.shared.getHistory()
+        buffer = PasteBuffer.shared.getBuffer()
         
         // Calculate the height based on the number of items.
         let rowHeight: CGFloat = 30
-        let totalRowsHeight = rowHeight * CGFloat(clipboardHistory.count)
+        let totalRowsHeight = rowHeight * CGFloat(buffer.count)
         
         // Calculate the minimum height needed to display the table without overlapping the header.
         let paddingTop: CGFloat = 50
@@ -48,18 +46,18 @@ class BufferViewController: NSViewController {
         registerForClipboardNotification()
         
         // Reload the table view data.
-        historyView.reloadData()
+        bufferView.reloadData()
     }
 
 
     private func setupTableView() {
-        historyView = CustomTableView()
-        historyView.dataSource = self
-        historyView.delegate = self
+        bufferView = CustomTableView()
+        bufferView.dataSource = self
+        bufferView.delegate = self
 
         // Create a scroll view and add the table view to it
         let scrollView = NSScrollView()
-        scrollView.documentView = historyView
+        scrollView.documentView = bufferView
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
 
@@ -85,25 +83,25 @@ class BufferViewController: NSViewController {
 
         // Add a single column to the table view
         clipboardColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "ClipboardColumn"))
-        clipboardColumn?.title = "Items (\(clipboardHistory.count))"
+        clipboardColumn?.title = "Items (\(buffer.count))"
         if let column = clipboardColumn {
-            historyView.addTableColumn(column)
+            bufferView.addTableColumn(column)
         }
 
         // Remove the header view
-        historyView.headerView = nil
+        bufferView.headerView = nil
 
-        historyView.focusRingType = .none
-        historyView.selectionHighlightStyle = .regular
-        historyView.allowsEmptySelection = true
-        historyView.allowsMultipleSelection = false
-        historyView.enclosingScrollView?.drawsBackground = false
-        historyView.backgroundColor = NSColor.clear
+        bufferView.focusRingType = .none
+        bufferView.selectionHighlightStyle = .regular
+        bufferView.allowsEmptySelection = true
+        bufferView.allowsMultipleSelection = false
+        bufferView.enclosingScrollView?.drawsBackground = false
+        bufferView.backgroundColor = NSColor.clear
     }
     
     override func viewDidAppear() {
         super.viewDidAppear()
-        self.view.window?.makeFirstResponder(historyView)
+        self.view.window?.makeFirstResponder(bufferView)
     }
         
     private func registerForClipboardNotification() {
@@ -112,18 +110,18 @@ class BufferViewController: NSViewController {
     }
 
     @objc private func bufferDidChange(_ notification: Notification) {
-        reloadHistory()
+        reloadView()
     }
 
-    private func reloadHistory() {
-        clipboardHistory = PasteBuffer.shared.getHistory()
-        historyView.reloadData()
+    private func reloadView() {
+        buffer = PasteBuffer.shared.getBuffer()
+        bufferView.reloadData()
         
-        clipboardColumn?.title = "Items (\(clipboardHistory.count))"
+        clipboardColumn?.title = "Items (\(buffer.count))"
 
         // Calculate the new height of the table view
         let rowHeight: CGFloat = 30
-        let newHeight = rowHeight * CGFloat(clipboardHistory.count) + 20
+        let newHeight = rowHeight * CGFloat(buffer.count) + 20
 
         // Determine the maximum height based on the screen size or a fixed maximum.
         let maxHeight = NSScreen.main?.visibleFrame.height ?? 600 // Example max height.
@@ -172,11 +170,11 @@ class BufferViewController: NSViewController {
     
     @objc func joinItems(separator: String) {
         PasteBuffer.shared.joinItems(separator: separator)
-        historyView.reloadData()
+        bufferView.reloadData()
     }
     
     @objc func copySelectedItem() {
-        let selectedRow = historyView.selectedRow
+        let selectedRow = bufferView.selectedRow
         guard selectedRow >= 0 else {
             return // No selection
         }
@@ -185,47 +183,47 @@ class BufferViewController: NSViewController {
     }
     
     func moveSelectedItem(direction: MoveDirection) {
-        let selectedRow = historyView.selectedRow
-        guard selectedRow >= 0 else {
+        let selectedRowPosition = bufferView.selectedRow
+        guard selectedRowPosition >= 0 else {
             return
         }
 
-        var newPosition = direction == .up ? selectedRow - 1 : selectedRow + 1
+        var newPosition = direction == .up ? selectedRowPosition - 1 : selectedRowPosition + 1
 
-        if newPosition >= clipboardHistory.count {
+        if newPosition >= buffer.count {
             // If the new position is beyond the last item, move to the start (index 0)
             newPosition = 0
         } else if newPosition < 0 {
             // If the new position is before the first item, move to the end (last index)
-            newPosition = clipboardHistory.count - 1
+            newPosition = buffer.count - 1
         }
 
-        PasteBuffer.shared.moveItem(from: selectedRow, to: newPosition)
+        PasteBuffer.shared.moveItem(from: selectedRowPosition, to: newPosition)
 
         // Reload the table view and update selection
-        historyView.reloadData()
-        historyView.selectRowIndexes(IndexSet(integer: newPosition), byExtendingSelection: false)
+        bufferView.reloadData()
+        bufferView.selectRowIndexes(IndexSet(integer: newPosition), byExtendingSelection: false)
     }
 
     @objc func duplicateSelectedItem() {
-        let selectedRow = historyView.selectedRow
+        let selectedRow = bufferView.selectedRow
         guard selectedRow >= 0 else {
             return // No selection
         }
 
-        let itemToDuplicate = PasteBuffer.shared.getHistory()[selectedRow]
+        let itemToDuplicate = PasteBuffer.shared.getBuffer()[selectedRow]
         PasteBuffer.shared.duplicateItem(itemToDuplicate, at: selectedRow)
 
         // Reload the table view and select the new duplicated row
-        historyView.reloadData()
+        bufferView.reloadData()
         
         let newRowToSelect = selectedRow + 1 // The duplicated row will be after the original
-        historyView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
+        bufferView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
     }
 
     
     @objc func deleteSelectedItem() {
-        let selectedRow = historyView.selectedRow
+        let selectedRow = bufferView.selectedRow
         guard selectedRow >= 0 else {
             return // No selection
         }
@@ -233,13 +231,13 @@ class BufferViewController: NSViewController {
         PasteBuffer.shared.deleteItem(at: selectedRow)
         
         // Reload the table view
-        historyView.reloadData()
+        bufferView.reloadData()
         
         // Determine the new row to select
-        let newRowCount = PasteBuffer.shared.getHistory().count
+        let newRowCount = PasteBuffer.shared.getBuffer().count
         if newRowCount > 0 {
             let newRowToSelect = selectedRow >= newRowCount ? newRowCount - 1 : selectedRow
-            historyView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
+            bufferView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
         } else {
             // No rows left to select
         }
@@ -251,55 +249,26 @@ class BufferViewController: NSViewController {
 }
 
 extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
-    // Implement the data source and delegate methods to display the clipboard history
+    // Implement the data source and delegate methods to display the buffer item
     func numberOfRows(in tableView: NSTableView) -> Int {
-        return clipboardHistory.count
+        return buffer.count
     }
     
-    func tableViewSelectionDidChange(_ notification: Notification) {
-//        if let selectedRow = historyView.selectedRowIndexes.first {
-//             let selectedItem = clipboardHistory[selectedRow]
-//            // Perform an action with the selected item, like copying it to the clipboard
-//        }
-    }
+    func tableViewSelectionDidChange(_ notification: Notification) {}
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        let cellIdentifier = NSUserInterfaceItemIdentifier(rawValue: "ClipboardCell")
-        var cellView: NSTableCellView
-        var textField: NSTextField
+        let cellIdentifier = NSUserInterfaceItemIdentifier(rawValue: "ShortcutCell")
         
-        if let existingCellView = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? NSTableCellView {
-            cellView = existingCellView
-            textField = existingCellView.textField!
+        var cellView: ShortcutTableCellView
+        
+        if let existingCell = tableView.makeView(withIdentifier: cellIdentifier, owner: self) as? ShortcutTableCellView {
+            cellView = existingCell
         } else {
-            cellView = NSTableCellView(frame: NSRect(x: 0, y: 0, width: tableColumn?.width ?? 200, height: 25))
+            cellView = ShortcutTableCellView(frame: NSRect(x: 0, y: 0, width: tableColumn?.width ?? 200, height: 30))
             cellView.identifier = cellIdentifier
-            
-            textField = NSTextField()
-            textField.isBezeled = false
-            textField.drawsBackground = false
-            textField.isEditable = false
-            textField.isSelectable = false
-            textField.autoresizingMask = [.width, .height]
-            textField.font = .menuFont(ofSize: 0)
-            textField.textColor = .labelColor
-            cellView.addSubview(textField)
-            cellView.textField = textField
         }
         
-        // Adjust the text field's frame to remove horizontal padding and center vertically
-        textField.frame = CGRect(x: 0,
-                                 y: (cellView.bounds.height - textField.font!.pointSize) / 2 - 2, // Center vertically
-                                 width: cellView.bounds.width,
-                                 height: textField.font!.pointSize + 4) // Adjust height as needed
-        
-        textField.stringValue = formatString(from: clipboardHistory[row])
-        
-        // Additional styling to mimic a menu item
-        textField.backgroundColor = .clear
-        textField.enclosingScrollView?.drawsBackground = false
-        textField.lineBreakMode = .byTruncatingMiddle
-        
+        cellView.configure(with: formatString(from: buffer[row]), row: row)
         return cellView
     }
 

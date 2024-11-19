@@ -19,6 +19,7 @@
 		53E3E6612C1BA4A3004470FE /* fast-swipe.wav in Resources */ = {isa = PBXBuildFile; fileRef = 53E3E6602C1BA4A3004470FE /* fast-swipe.wav */; };
 		53E3E6632C1BA6D5004470FE /* short-wind.wav in Resources */ = {isa = PBXBuildFile; fileRef = 53E3E6622C1BA6D5004470FE /* short-wind.wav */; };
 		53E3E6652C1BA767004470FE /* wind-sweep.wav in Resources */ = {isa = PBXBuildFile; fileRef = 53E3E6642C1BA767004470FE /* wind-sweep.wav */; };
+		53F0EF922CEC43D9006CA2B0 /* ShortcutTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F0EF912CEC43D9006CA2B0 /* ShortcutTableCellView.swift */; };
 		53F3D21D2B46176E00ACB57F /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 53F3D21C2B46176E00ACB57F /* HotKey */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		53E3E6602C1BA4A3004470FE /* fast-swipe.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "fast-swipe.wav"; sourceTree = "<group>"; };
 		53E3E6622C1BA6D5004470FE /* short-wind.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "short-wind.wav"; sourceTree = "<group>"; };
 		53E3E6642C1BA767004470FE /* wind-sweep.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "wind-sweep.wav"; sourceTree = "<group>"; };
+		53F0EF912CEC43D9006CA2B0 /* ShortcutTableCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutTableCellView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +78,7 @@
 				53DAD4832B2D39E500213CC2 /* BufferWindowController.swift */,
 				53DAD4872B2D3A5A00213CC2 /* BufferViewController.swift */,
 				531259272B42BB6400D66761 /* CustomTableView.swift */,
+				53F0EF912CEC43D9006CA2B0 /* ShortcutTableCellView.swift */,
 				53DAD4762B2D394B00213CC2 /* Assets.xcassets */,
 				53E3E65D2C1BA46C004470FE /* Sounds */,
 				53DAD47B2B2D394B00213CC2 /* Pasty.entitlements */,
@@ -183,6 +186,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				53F0EF922CEC43D9006CA2B0 /* ShortcutTableCellView.swift in Sources */,
 				53DAD4862B2D3A1C00213CC2 /* PasteBuffer.swift in Sources */,
 				53DAD4842B2D39E500213CC2 /* BufferWindowController.swift in Sources */,
 				531259282B42BB6400D66761 /* CustomTableView.swift in Sources */,

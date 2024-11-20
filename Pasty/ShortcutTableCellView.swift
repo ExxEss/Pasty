@@ -7,6 +7,48 @@
 
 import Cocoa
 
+class ContentPopoverViewController: NSViewController {
+    private let textField: NSTextField = {
+        let field = NSTextField()
+        field.isEditable = false
+        field.isBezeled = false
+        field.drawsBackground = false
+        field.textColor = .labelColor
+        field.font = .systemFont(ofSize: NSFont.systemFontSize)
+        field.lineBreakMode = .byTruncatingTail
+        field.cell?.wraps = true
+        field.cell?.isScrollable = false
+        return field
+    }()
+    
+    init(content: String) {
+        super.init(nibName: nil, bundle: nil)
+        textField.stringValue = content
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func loadView() {
+        let containerView = NSView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        
+        containerView.addSubview(textField)
+        
+        NSLayoutConstraint.activate([
+            textField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8),
+            textField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
+            textField.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
+            textField.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8),
+            textField.widthAnchor.constraint(lessThanOrEqualToConstant: 300) // Max width
+        ])
+        
+        self.view = containerView
+    }
+}
+
 protocol ShortcutTableCellViewDelegate: AnyObject {
     func cellDidEndEditing(_ cell: ShortcutTableCellView, newValue: String)
 }
@@ -16,6 +58,9 @@ class ShortcutTableCellView: NSTableCellView {
     private var modifiersLabel: NSTextField?
     private var numberLabel: NSTextField?
     private var originalString: String = ""
+    
+    private var popover: NSPopover?
+    private var trackingArea: NSTrackingArea?
     
     weak var delegate: ShortcutTableCellViewDelegate?
     
@@ -67,10 +112,30 @@ class ShortcutTableCellView: NSTableCellView {
         numberLabel.alignment = .center
         self.numberLabel = numberLabel
         addSubview(numberLabel)
+        
+        updateTrackingAreas()
     }
     
+    override func updateTrackingAreas() {
+        if let trackingArea = trackingArea {
+            removeTrackingArea(trackingArea)
+        }
+        
+        trackingArea = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeInActiveApp],
+            owner: self,
+            userInfo: nil
+        )
+        
+        if let trackingArea = trackingArea {
+            addTrackingArea(trackingArea)
+        }
+    }
+
     override func layout() {
         super.layout()
+        updateTrackingAreas()
         
         let modifiersWidth: CGFloat = 20  // Width for "⌃"
         let numberWidth: CGFloat = 18     // Width for the number
@@ -111,6 +176,48 @@ class ShortcutTableCellView: NSTableCellView {
         )
     }
     
+    override func mouseEntered(with event: NSEvent) {
+        showPopover()
+    }
+        
+    override func mouseExited(with event: NSEvent) {
+        hidePopover()
+    }
+        
+    private func showPopover() {
+        guard popover == nil,
+              let content = contentField?.stringValue,
+              !content.isEmpty else {
+            return
+        }
+        
+        let contentViewController = ContentPopoverViewController(content: content)
+        
+        let popover = NSPopover()
+        popover.contentViewController = contentViewController
+        popover.behavior = .transient // Automatically closes when clicking outside
+        popover.animates = true
+        
+        // Show the popover above the cell
+        popover.show(
+            relativeTo: contentField?.bounds ?? bounds,
+            of: contentField ?? self,
+            preferredEdge: .maxY
+        )
+        
+        self.popover = popover
+    }
+        
+    private func hidePopover() {
+        popover?.close()
+        popover = nil
+    }
+    
+    override func removeFromSuperview() {
+        super.removeFromSuperview()
+        hidePopover()
+    }
+    
     func configure(with content: String, row: Int) {
         originalString = content
         contentField?.stringValue = content
@@ -123,6 +230,8 @@ class ShortcutTableCellView: NSTableCellView {
             modifiersLabel?.stringValue = ""
             numberLabel?.stringValue = ""
         }
+        
+        updateTrackingAreas()
     }
 }
 

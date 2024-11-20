@@ -119,54 +119,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "35133546-9418-4407-95FE-48F780A874F0"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Pasty/ShortcutTableCellView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "248"
-            endingLineNumber = "248"
-            landmarkName = "control(_:textView:doCommandBy:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "35133546-9418-4407-95FE-48F780A874F0 - b9b954cb83187a53"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Pasty.ShortcutTableCellView.controlTextDidEndEditing(Foundation.Notification) -&gt; ()"
-                  moduleName = "Pasty"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/EssExx/Pasty/Pasty/ShortcutTableCellView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "130"
-                  endingLineNumber = "130"
-                  offsetFromSymbolStart = "116">
-               </Location>
-               <Location
-                  uuid = "35133546-9418-4407-95FE-48F780A874F0 - b9b954cb83187a53"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Pasty.ShortcutTableCellView.controlTextDidEndEditing(Foundation.Notification) -&gt; ()"
-                  moduleName = "Pasty"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/EssExx/Pasty/Pasty/ShortcutTableCellView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "130"
-                  endingLineNumber = "130"
-                  offsetFromSymbolStart = "128">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "1C984A12-07B4-41CA-82E8-7E53BB791FE2"
             shouldBeEnabled = "No"
             ignoreCount = "0"

@@ -10,7 +10,7 @@ enum MoveDirection {
     case up, down
 }
 
-class BufferViewController: NSViewController, ShortcutTableCellViewDelegate {
+class BufferViewController: NSViewController {
     private var bufferView: CustomTableView!
     private var buffer: [String] = []
     private var clipboardColumn: NSTableColumn?
@@ -197,28 +197,11 @@ extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
             cellView.identifier = cellIdentifier
         }
         
-        cellView.delegate = self
-        cellView.configure(with: formatString(from: buffer[row]), row: row)
+        cellView.configure(with: buffer[row], row: row)
         return cellView
     }
 
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return 30 // Adjust the height to match menu item style
-    }
-    
-    private func formatString(from originalString: String) -> String {
-        let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Regular expression to match sequences of two or more newline characters
-        let newlineRegex = try! NSRegularExpression(pattern: "\n{1,}", options: [])
-        
-        let range = NSRange(trimmedString.startIndex..<trimmedString.endIndex, in: trimmedString)
-        
-        // Replace each match with the same sequence followed by a space
-        var formattedString = newlineRegex.stringByReplacingMatches(in: trimmedString, options: [], range: range, withTemplate: "$0 ")
-        
-        formattedString = formattedString.replacingOccurrences(of: "\n", with: " ↩︎")
-        
-        return formattedString
     }
 }

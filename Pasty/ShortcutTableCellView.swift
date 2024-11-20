@@ -7,23 +7,62 @@
 
 import Cocoa
 
+protocol ContentPopoverDelegate: AnyObject {
+    func popoverDidEndEditing(_ content: String)
+}
+
 class ContentPopoverViewController: NSViewController {
-    private let textField: NSTextField = {
-        let field = NSTextField()
-        field.isEditable = false
-        field.isBezeled = false
-        field.drawsBackground = false
-        field.textColor = .labelColor
-        field.font = .systemFont(ofSize: NSFont.systemFontSize)
-        field.lineBreakMode = .byTruncatingTail
-        field.cell?.wraps = true
-        field.cell?.isScrollable = false
-        return field
+    weak var delegate: ContentPopoverDelegate?
+    private var originalContent: String
+    
+    private lazy var scrollView: NSScrollView = {
+        let scroll = NSScrollView()
+        scroll.hasVerticalScroller = true
+        scroll.hasHorizontalScroller = false
+        scroll.autohidesScrollers = true
+        scroll.borderType = .noBorder
+        scroll.drawsBackground = false
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        return scroll
+    }()
+    
+    private lazy var textView: NSTextView = {
+        // Create text storage, layout manager, and text container
+        let storage = NSTextStorage()
+        let layoutManager = NSLayoutManager()
+        storage.addLayoutManager(layoutManager)
+        
+        let textContainer = NSTextContainer(size: NSSize(width: 500, height: 900))
+        textContainer.widthTracksTextView = true
+        layoutManager.addTextContainer(textContainer)
+        
+        // Create text view with the configured components
+        let text = NSTextView(frame: .zero, textContainer: textContainer)
+        text.autoresizingMask = [.width, .height]
+        text.isEditable = true
+        text.isSelectable = true
+        text.allowsUndo = true
+        text.font = .menuFont(ofSize: 0)
+        text.textColor = .white
+        text.drawsBackground = false
+        text.enabledTextCheckingTypes = 0
+        text.isAutomaticQuoteSubstitutionEnabled = false
+        text.isAutomaticDashSubstitutionEnabled = false
+        text.isAutomaticTextReplacementEnabled = false
+        text.isAutomaticSpellingCorrectionEnabled = false
+        text.isVerticallyResizable = true
+        text.isHorizontallyResizable = false
+        text.textContainerInset = NSSize(width: 10, height: 10)
+        
+        // Set the content
+        text.string = self.originalContent
+        
+        return text
     }()
     
     init(content: String) {
+        self.originalContent = content
         super.init(nibName: nil, bundle: nil)
-        textField.stringValue = content
     }
     
     required init?(coder: NSCoder) {
@@ -31,21 +70,49 @@ class ContentPopoverViewController: NSViewController {
     }
     
     override func loadView() {
-        let containerView = NSView()
+        // Create the main view with a fixed size
+        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 500, height: 900))
         containerView.translatesAutoresizingMaskIntoConstraints = false
-        textField.translatesAutoresizingMaskIntoConstraints = false
         
-        containerView.addSubview(textField)
+        // Add scroll view
+        containerView.addSubview(scrollView)
         
+        // Set scroll view's document view
+        scrollView.documentView = textView
+        
+        // Setup constraints
         NSLayoutConstraint.activate([
-            textField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8),
-            textField.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
-            textField.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
-            textField.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8),
-            textField.widthAnchor.constraint(lessThanOrEqualToConstant: 300) // Max width
+            scrollView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
         ])
         
         self.view = containerView
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        textView.delegate = self
+        
+        // Ensure the text view fills the scroll view's content area
+        let contentSize = scrollView.contentSize
+        textView.minSize = NSSize(width: 0, height: 0)
+        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
+    }
+    
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        // Update text container width when view is laid out
+        textView.textContainer?.containerSize = NSSize(width: scrollView.contentSize.width - 20, height: CGFloat.greatestFiniteMagnitude)
+    }
+}
+
+extension ContentPopoverViewController: NSTextViewDelegate {
+    func textDidEndEditing(_ notification: Notification) {
+        guard let textView = notification.object as? NSTextView else { return }
+        delegate?.popoverDidEndEditing(textView.string)
     }
 }
 
@@ -53,7 +120,7 @@ protocol ShortcutTableCellViewDelegate: AnyObject {
     func cellDidEndEditing(_ cell: ShortcutTableCellView, newValue: String)
 }
 
-class ShortcutTableCellView: NSTableCellView {
+class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
     private var contentField: NSTextField?
     private var modifiersLabel: NSTextField?
     private var numberLabel: NSTextField?
@@ -61,6 +128,7 @@ class ShortcutTableCellView: NSTableCellView {
     
     private var popover: NSPopover?
     private var trackingArea: NSTrackingArea?
+    private var isEditing = false
     
     weak var delegate: ShortcutTableCellViewDelegate?
     
@@ -79,7 +147,7 @@ class ShortcutTableCellView: NSTableCellView {
         let contentField = NSTextField()
         contentField.isBezeled = false
         contentField.drawsBackground = false
-        contentField.isEditable = true
+        contentField.isEditable = false
         contentField.isSelectable = true
         contentField.font = .menuFont(ofSize: 0)
         contentField.textColor = .labelColor
@@ -132,6 +200,100 @@ class ShortcutTableCellView: NSTableCellView {
             addTrackingArea(trackingArea)
         }
     }
+        
+    override func mouseEntered(with event: NSEvent) {
+        if !isEditing {
+            showPopover()
+        }
+    }
+        
+    override func mouseExited(with event: NSEvent) {
+        if !isEditing {
+            // Get the mouse location in screen coordinates
+            let mouseLocation = NSEvent.mouseLocation
+            
+            // Check if mouse is within the popover window frame
+            if let popoverWindow = popover?.contentViewController?.view.window {
+                let popoverFrame = popoverWindow.frame
+                if !NSPointInRect(mouseLocation, popoverFrame) {
+                    hidePopover()
+                }
+            } else {
+                hidePopover()
+            }
+        }
+    }
+        
+    private func showPopover() {
+        guard popover == nil,
+              let content = Optional(originalString),
+              !content.isEmpty else {
+            return
+        }
+        
+        let contentViewController = ContentPopoverViewController(content: content)
+        contentViewController.delegate = self
+        
+        let popover = NSPopover()
+        popover.contentViewController = contentViewController
+        popover.behavior = .semitransient
+        popover.animates = true
+        
+        // Set the popover size
+        popover.contentSize = NSSize(width: 500, height: 900)
+        
+        // Show the popover
+        popover.show(
+            relativeTo: contentField?.bounds ?? bounds,
+            of: contentField ?? self,
+            preferredEdge: .maxY
+        )
+        
+        self.popover = popover
+        
+        // Add notification observer for clicking outside
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePopoverShouldClose(_:)),
+            name: NSPopover.willCloseNotification,
+            object: popover
+        )
+    }
+        
+    @objc private func handlePopoverShouldClose(_ notification: Notification) {
+        if isEditing {
+            // Prevent closing if we're editing
+            if let popover = notification.object as? NSPopover {
+                popover.performClose(nil)
+            }
+        }
+    }
+        
+    private func hidePopover() {
+        guard !isEditing else { return }
+        NotificationCenter.default.removeObserver(self, name: NSPopover.willCloseNotification, object: popover)
+        popover?.close()
+        popover = nil
+    }
+        
+    // ContentPopoverDelegate
+    func popoverDidEndEditing(_ content: String) {
+        delegate?.cellDidEndEditing(self, newValue: content)
+        isEditing = false
+        hidePopover()
+    }
+        
+    // Handle when the text view begins editing
+    func textViewDidBeginEditing(_ notification: Notification) {
+        isEditing = true
+    }
+        
+    // Clean up
+    override func removeFromSuperview() {
+        super.removeFromSuperview()
+        NotificationCenter.default.removeObserver(self)
+        hidePopover()
+    }
 
     override func layout() {
         super.layout()
@@ -176,51 +338,9 @@ class ShortcutTableCellView: NSTableCellView {
         )
     }
     
-    override func mouseEntered(with event: NSEvent) {
-        showPopover()
-    }
-        
-    override func mouseExited(with event: NSEvent) {
-        hidePopover()
-    }
-        
-    private func showPopover() {
-        guard popover == nil,
-              let content = contentField?.stringValue,
-              !content.isEmpty else {
-            return
-        }
-        
-        let contentViewController = ContentPopoverViewController(content: content)
-        
-        let popover = NSPopover()
-        popover.contentViewController = contentViewController
-        popover.behavior = .transient // Automatically closes when clicking outside
-        popover.animates = true
-        
-        // Show the popover above the cell
-        popover.show(
-            relativeTo: contentField?.bounds ?? bounds,
-            of: contentField ?? self,
-            preferredEdge: .maxY
-        )
-        
-        self.popover = popover
-    }
-        
-    private func hidePopover() {
-        popover?.close()
-        popover = nil
-    }
-    
-    override func removeFromSuperview() {
-        super.removeFromSuperview()
-        hidePopover()
-    }
-    
     func configure(with content: String, row: Int) {
         originalString = content
-        contentField?.stringValue = content
+        contentField?.stringValue = formatString(from: content)
         
         // Only show shortcuts for the first 9 items
         if row < 9 {
@@ -236,20 +356,19 @@ class ShortcutTableCellView: NSTableCellView {
 }
 
 extension ShortcutTableCellView: NSTextFieldDelegate {
-    func controlTextDidEndEditing(_ obj: Notification) {
-        guard let textField = obj.object as? NSTextField,
-              textField.stringValue != originalString else {
-            return
-        }
+    private func formatString(from originalString: String) -> String {
+        let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        delegate?.cellDidEndEditing(self, newValue: textField.stringValue)
-    }
-    
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-            delegate?.cellDidEndEditing(self, newValue: contentField?.stringValue ?? "")
-            return true
-        }
-        return false
+        // Regular expression to match sequences of two or more newline characters
+        let newlineRegex = try! NSRegularExpression(pattern: "\n{1,}", options: [])
+        
+        let range = NSRange(trimmedString.startIndex..<trimmedString.endIndex, in: trimmedString)
+        
+        // Replace each match with the same sequence followed by a space
+        var formattedString = newlineRegex.stringByReplacingMatches(in: trimmedString, options: [], range: range, withTemplate: "$0 ")
+        
+        formattedString = formattedString.replacingOccurrences(of: "\n", with: " ↩︎")
+        
+        return formattedString
     }
 }

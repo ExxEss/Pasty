@@ -71,7 +71,7 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     func updatePanelTitle() {
         let count = PasteBuffer.shared.getBuffer().count
         if let panel = window as? BufferPanel {
-            panel.title = "Items to paste: \(count)"
+            panel.title = "\(count) \(count > 1 ? "items" : "item") to paste"
         }
     }
     

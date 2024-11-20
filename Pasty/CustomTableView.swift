@@ -20,16 +20,6 @@ class CustomTableView: NSTableView {
                     viewController.joinItems(separator: " ")
                 }
                 return
-            case 126: // Up arrow key code
-                if shiftKeyPressed {
-                    viewController.moveSelectedItem(direction: .up)
-                    return
-                }
-            case 125: // Down arrow key code
-                if shiftKeyPressed {
-                    viewController.moveSelectedItem(direction: .down)
-                    return
-                }
             default:
                 break
             }

@@ -10,7 +10,7 @@ enum MoveDirection {
     case up, down
 }
 
-class BufferViewController: NSViewController {
+class BufferViewController: NSViewController, ShortcutTableCellViewDelegate {
     private var bufferView: CustomTableView!
     private var buffer: [String] = []
     private var clipboardColumn: NSTableColumn?
@@ -149,25 +149,6 @@ class BufferViewController: NSViewController {
         }
     }
     
-    override func keyDown(with event: NSEvent) {
-        guard let characters = event.charactersIgnoringModifiers else {
-            return
-        }
-        
-        switch characters {
-        case "d":
-            duplicateSelectedItem()
-        case "c":
-            copySelectedItem()
-        case "x":
-            deleteSelectedItem()
-        case "z":
-            restoreItem()
-        default:
-            super.keyDown(with: event)
-        }
-    }
-    
     @objc func joinItems(separator: String) {
         PasteBuffer.shared.joinItems(separator: separator)
         bufferView.reloadData()
@@ -182,69 +163,17 @@ class BufferViewController: NSViewController {
         PasteBuffer.shared.copyItemFromBuffer(at: selectedRow)
     }
     
-    func moveSelectedItem(direction: MoveDirection) {
-        let selectedRowPosition = bufferView.selectedRow
-        guard selectedRowPosition >= 0 else {
-            return
+    func cellDidEndEditing(_ cell: ShortcutTableCellView, newValue: String) {
+        let row = bufferView.row(for: cell)
+        if row >= 0 {
+            // Update your data model with the new value
+            PasteBuffer.shared.updateItem(at: row, with: newValue)
+            buffer = PasteBuffer.shared.getBuffer()
+            
+            // Optionally reload the row to ensure proper display
+            bufferView.reloadData(forRowIndexes: IndexSet(integer: row),
+                                  columnIndexes: IndexSet(integer: 0))
         }
-
-        var newPosition = direction == .up ? selectedRowPosition - 1 : selectedRowPosition + 1
-
-        if newPosition >= buffer.count {
-            // If the new position is beyond the last item, move to the start (index 0)
-            newPosition = 0
-        } else if newPosition < 0 {
-            // If the new position is before the first item, move to the end (last index)
-            newPosition = buffer.count - 1
-        }
-
-        PasteBuffer.shared.moveItem(from: selectedRowPosition, to: newPosition)
-
-        // Reload the table view and update selection
-        bufferView.reloadData()
-        bufferView.selectRowIndexes(IndexSet(integer: newPosition), byExtendingSelection: false)
-    }
-
-    @objc func duplicateSelectedItem() {
-        let selectedRow = bufferView.selectedRow
-        guard selectedRow >= 0 else {
-            return // No selection
-        }
-
-        let itemToDuplicate = PasteBuffer.shared.getBuffer()[selectedRow]
-        PasteBuffer.shared.duplicateItem(itemToDuplicate, at: selectedRow)
-
-        // Reload the table view and select the new duplicated row
-        bufferView.reloadData()
-        
-        let newRowToSelect = selectedRow + 1 // The duplicated row will be after the original
-        bufferView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
-    }
-
-    
-    @objc func deleteSelectedItem() {
-        let selectedRow = bufferView.selectedRow
-        guard selectedRow >= 0 else {
-            return // No selection
-        }
-        
-        PasteBuffer.shared.deleteItem(at: selectedRow)
-        
-        // Reload the table view
-        bufferView.reloadData()
-        
-        // Determine the new row to select
-        let newRowCount = PasteBuffer.shared.getBuffer().count
-        if newRowCount > 0 {
-            let newRowToSelect = selectedRow >= newRowCount ? newRowCount - 1 : selectedRow
-            bufferView.selectRowIndexes(IndexSet(integer: newRowToSelect), byExtendingSelection: false)
-        } else {
-            // No rows left to select
-        }
-    }
-    
-    @objc func restoreItem() {
-        PasteBuffer.shared.restoreItem()
     }
 }
 
@@ -268,10 +197,10 @@ extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
             cellView.identifier = cellIdentifier
         }
         
+        cellView.delegate = self
         cellView.configure(with: formatString(from: buffer[row]), row: row)
         return cellView
     }
-
 
     func tableView(_ tableView: NSTableView, heightOfRow row: Int) -> CGFloat {
         return 30 // Adjust the height to match menu item style

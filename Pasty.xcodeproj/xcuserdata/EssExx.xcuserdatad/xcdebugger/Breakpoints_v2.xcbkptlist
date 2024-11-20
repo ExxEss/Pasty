@@ -110,9 +110,73 @@
             filePath = "Pasty/PasteBuffer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "151"
-            endingLineNumber = "151"
+            startingLineNumber = "152"
+            endingLineNumber = "152"
             landmarkName = "playCopySound()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "35133546-9418-4407-95FE-48F780A874F0"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pasty/ShortcutTableCellView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "131"
+            endingLineNumber = "131"
+            landmarkName = "controlTextDidEndEditing(_:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "35133546-9418-4407-95FE-48F780A874F0 - b9b954cb83187a53"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Pasty.ShortcutTableCellView.controlTextDidEndEditing(Foundation.Notification) -&gt; ()"
+                  moduleName = "Pasty"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EssExx/Pasty/Pasty/ShortcutTableCellView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "130"
+                  endingLineNumber = "130"
+                  offsetFromSymbolStart = "116">
+               </Location>
+               <Location
+                  uuid = "35133546-9418-4407-95FE-48F780A874F0 - b9b954cb83187a53"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Pasty.ShortcutTableCellView.controlTextDidEndEditing(Foundation.Notification) -&gt; ()"
+                  moduleName = "Pasty"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/EssExx/Pasty/Pasty/ShortcutTableCellView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "130"
+                  endingLineNumber = "130"
+                  offsetFromSymbolStart = "128">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "1C984A12-07B4-41CA-82E8-7E53BB791FE2"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Pasty/BufferViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "167"
+            endingLineNumber = "167"
+            landmarkName = "cellDidEndEditing(_:newValue:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -71,7 +71,7 @@ class PasteBuffer {
         pasteNthHotKeys = []
         let keys: [Key] = [.one, .two, .three, .four, .five, .six, .seven, .eight, .nine]
         for (index, key) in keys.enumerated() {
-            let hotKey = HotKey(key: key, modifiers: [.control, .shift])
+            let hotKey = HotKey(key: key, modifiers: [.control])
             hotKey.keyDownHandler = { [weak self] in
                 self?.pasteNth(index)
             }
@@ -129,6 +129,7 @@ class PasteBuffer {
                     playCopySound()
                 } else {
                     isBufferAppendable = true
+                    return
                 }
                 
                 NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: text)
@@ -208,25 +209,8 @@ class PasteBuffer {
         NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
     }
     
-    func moveItem(from oldIndex: Int, to newIndex: Int) {
-        guard oldIndex != newIndex,
-              oldIndex >= 0, oldIndex < pasteBuffer.count,
-              newIndex >= 0, newIndex < pasteBuffer.count else {
-            return
-        }
-        
-        let item = pasteBuffer.remove(at: oldIndex)
-        pasteBuffer.insert(item, at: newIndex)
-        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
-    }
-    
-    func duplicateItem(_ item: String, at index: Int) {
-        guard index >= 0 && index < pasteBuffer.count else {
-            return // Index out of bounds check
-        }
-        
-        pasteBuffer.insert(item, at: index + 1)
-        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
+    func updateItem(at index: Int, with newValue: String) {
+        pasteBuffer[index] = newValue
     }
     
     func deleteItem(at index: Int) {
@@ -241,17 +225,6 @@ class PasteBuffer {
             closePanel()
         }
     }
-    
-    func restoreItem() {
-        guard let item = pasteHistory.last else {
-            return
-        }
-        
-        pasteBuffer.insert(item, at: 0)
-        pasteHistory.removeLast()
-        
-        NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
-    }
 
     private func paste() {
         if let firstItem = pasteBuffer.first {
@@ -260,6 +233,8 @@ class PasteBuffer {
             isBufferAppendable = false
             copyToClipboard(firstItem)
             simulatePasteAction()
+            
+            NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
             
             if pasteBuffer.isEmpty {
                 closePanel()
@@ -288,6 +263,8 @@ class PasteBuffer {
             isBufferAppendable = false
             copyToClipboard(lastItem)
             simulatePasteAction()
+            
+            NotificationCenter.default.post(name: NSNotification.Name("BufferChanged"), object: nil)
             
             if pasteBuffer.isEmpty {
                 closePanel()

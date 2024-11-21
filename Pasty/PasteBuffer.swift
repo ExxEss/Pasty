@@ -45,10 +45,17 @@ class PasteBuffer {
     private init() {}
 
     func startMonitoring() {
+        // Global monitor for events outside the app
         NSEvent.addGlobalMonitorForEvents(matching: [
             .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown, .mouseMoved, .scrollWheel
         ]) { event in
             self.lastUserEventDate = Date()
+        }
+        
+        // Local monitor for events inside the app
+        NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
+            self?.lastUserEventDate = Date()
+            return event // Pass the event along for normal handling
         }
         
         Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(checkForChanges), userInfo: nil, repeats: true)
@@ -273,6 +280,7 @@ class PasteBuffer {
         }
         
         let timeDifference = pasteboardChangeDate.timeIntervalSince(lastEventDate)
+        print(timeDifference)
         let threshold: TimeInterval = 1.0
         
         return timeDifference < threshold

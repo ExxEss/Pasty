@@ -15,6 +15,8 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     var isActive: Bool {
         return self.window?.isKeyWindow ?? false
     }
+    
+    private var trackingArea: NSTrackingArea?
 
     private init() {
         let panelWidth: CGFloat = 300
@@ -58,6 +60,8 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
         registerForClipboardNotification()
         
         window?.delegate = self
+        
+        setupTrackingArea()
     }
 
     required init?(coder: NSCoder) {
@@ -66,7 +70,41 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+        removeTrackingArea()
     }
+    
+    private func setupTrackingArea() {
+        guard let contentView = window?.contentView else { return }
+        
+        removeTrackingArea()
+        
+        trackingArea = NSTrackingArea(
+            rect: contentView.bounds,
+            options: [.mouseEnteredAndExited, .activeAlways],
+            owner: self,
+            userInfo: nil
+        )
+        
+        if let trackingArea = trackingArea {
+            contentView.addTrackingArea(trackingArea)
+        }
+    }
+        
+    private func removeTrackingArea() {
+        guard let contentView = window?.contentView,
+              let trackingArea = trackingArea else { return }
+        
+        contentView.removeTrackingArea(trackingArea)
+        self.trackingArea = nil
+    }
+        
+    override func mouseEntered(with event: NSEvent) {
+        showPanel(makeKey: true)
+    }
+    
+//    override func mouseExited(with event: NSEvent) {
+//        NSApp.deactivate()
+//    }
     
     func updatePanelTitle() {
         let count = PasteBuffer.shared.getBuffer().count

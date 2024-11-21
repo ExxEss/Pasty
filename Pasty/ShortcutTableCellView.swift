@@ -15,6 +15,14 @@ class ContentPopoverViewController: NSViewController {
     weak var delegate: ContentPopoverDelegate?
     private var originalContent: String
     
+    private var trackingArea: NSTrackingArea?
+    
+    private var hasChanges = false {
+        didSet {
+            saveButton.isHidden = !hasChanges
+        }
+    }
+    
     private lazy var scrollView: NSScrollView = {
         let scroll = NSScrollView()
         scroll.hasVerticalScroller = true
@@ -39,8 +47,8 @@ class ContentPopoverViewController: NSViewController {
         // Create text view with the configured components
         let text = NSTextView(frame: .zero, textContainer: textContainer)
         text.autoresizingMask = [.width, .height]
-        text.isEditable = true
-        text.isSelectable = true
+//        text.isEditable = true
+//        text.isSelectable = true
         text.allowsUndo = true
         text.font = .menuFont(ofSize: 0)
         text.textColor = .white
@@ -60,6 +68,13 @@ class ContentPopoverViewController: NSViewController {
         return text
     }()
     
+    private lazy var saveButton: NSButton = {
+        let button = NSButton(title: "Save", target: self, action: #selector(saveButtonClicked))
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        return button
+    }()
+    
     init(content: String) {
         self.originalContent = content
         super.init(nibName: nil, bundle: nil)
@@ -70,25 +85,32 @@ class ContentPopoverViewController: NSViewController {
     }
     
     override func loadView() {
-        // Create the main view with a fixed size
         let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 500, height: 900))
         containerView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Add scroll view
         containerView.addSubview(scrollView)
+        containerView.addSubview(saveButton)
         
-        // Set scroll view's document view
         scrollView.documentView = textView
         
-        // Setup constraints
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: containerView.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+            scrollView.bottomAnchor.constraint(equalTo: saveButton.topAnchor, constant: -10),
+            
+            saveButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
+            saveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
+            saveButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+            saveButton.heightAnchor.constraint(equalToConstant: 30)
         ])
         
         self.view = containerView
+    }
+        
+    @objc private func saveButtonClicked() {
+        delegate?.popoverDidEndEditing(textView.string)
+        hasChanges = false
     }
     
     override func viewDidLoad() {
@@ -114,6 +136,11 @@ extension ContentPopoverViewController: NSTextViewDelegate {
         guard let textView = notification.object as? NSTextView else { return }
         delegate?.popoverDidEndEditing(textView.string)
     }
+    
+    func textDidChange(_ notification: Notification) {
+        guard let textView = notification.object as? NSTextView else { return }
+        hasChanges = textView.string != originalContent
+    }
 }
 
 protocol ShortcutTableCellViewDelegate: AnyObject {
@@ -128,6 +155,7 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
     
     private var popover: NSPopover?
     private var trackingArea: NSTrackingArea?
+    
     private var isEditing = false
     
     weak var delegate: ShortcutTableCellViewDelegate?
@@ -202,25 +230,21 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
     }
         
     override func mouseEntered(with event: NSEvent) {
-        if !isEditing {
-            showPopover()
-        }
+        showPopover()
     }
         
     override func mouseExited(with event: NSEvent) {
-        if !isEditing {
-            // Get the mouse location in screen coordinates
-            let mouseLocation = NSEvent.mouseLocation
-            
-            // Check if mouse is within the popover window frame
-            if let popoverWindow = popover?.contentViewController?.view.window {
-                let popoverFrame = popoverWindow.frame
-                if !NSPointInRect(mouseLocation, popoverFrame) {
-                    hidePopover()
-                }
-            } else {
+        // Get the mouse location in screen coordinates
+        let mouseLocation = NSEvent.mouseLocation
+        
+        // Check if mouse is within the popover window frame
+        if let popoverWindow = popover?.contentViewController?.view.window {
+            let popoverFrame = popoverWindow.frame
+            if !NSPointInRect(mouseLocation, popoverFrame) {
                 hidePopover()
             }
+        } else {
+            hidePopover()
         }
     }
         
@@ -261,16 +285,14 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
     }
         
     @objc private func handlePopoverShouldClose(_ notification: Notification) {
-        if isEditing {
-            // Prevent closing if we're editing
-            if let popover = notification.object as? NSPopover {
-                popover.performClose(nil)
-            }
+        // Prevent closing if we're editing
+        if let popover = notification.object as? NSPopover {
+            popover.performClose(nil)
         }
+        
     }
         
     private func hidePopover() {
-        guard !isEditing else { return }
         NotificationCenter.default.removeObserver(self, name: NSPopover.willCloseNotification, object: popover)
         popover?.close()
         popover = nil

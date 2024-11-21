@@ -16,6 +16,8 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
         return self.window?.isKeyWindow ?? false
     }
     
+    private var mouseMonitor: Any?
+    
     private var trackingArea: NSTrackingArea?
 
     private init() {
@@ -61,6 +63,9 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
         
         window?.delegate = self
         
+        // Start tracking global mouse movements
+        startMonitoringMouse()
+        
         setupTrackingArea()
     }
 
@@ -70,7 +75,34 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        removeTrackingArea()
+    }
+    
+    private func startMonitoringMouse() {
+        mouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
+            self?.checkMouseLocation()
+        }
+    }
+    
+    private func stopMonitoringMouse() {
+        if let monitor = mouseMonitor {
+            NSEvent.removeMonitor(monitor)
+            mouseMonitor = nil
+        }
+    }
+    
+    private func checkMouseLocation() {
+        let mouseLocation = NSEvent.mouseLocation
+        
+        // Check if the mouse is outside all windows
+        let windows = NSApplication.shared.windows
+        let isMouseOutside = !windows.contains { window in
+            let windowFrame = window.frame
+            return windowFrame.contains(mouseLocation)
+        }
+        
+        if isMouseOutside {
+            NSApp.deactivate()
+        }
     }
     
     private func setupTrackingArea() {
@@ -101,10 +133,6 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     override func mouseEntered(with event: NSEvent) {
         showPanel(makeKey: true)
     }
-    
-//    override func mouseExited(with event: NSEvent) {
-//        NSApp.deactivate()
-//    }
     
     func updatePanelTitle() {
         let count = PasteBuffer.shared.getBuffer().count
@@ -148,6 +176,9 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     
     func closePanel() {
         updatePanelTitle()
+        removeTrackingArea()
+        stopMonitoringMouse()
+
         self.window?.close()
     }
 }

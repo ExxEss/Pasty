@@ -175,7 +175,7 @@ class PasteBuffer {
     }
     
     @objc func autoResetBuffer() {
-        if Date().timeIntervalSince(lastChangeDate!) >= 60 {
+        if let lastChangeDate = lastChangeDate, Date().timeIntervalSince(lastChangeDate) >= 60 {
             resetBufferWithClosedPanel()
         }
     }
@@ -195,11 +195,6 @@ class PasteBuffer {
 
     func getBuffer() -> [String] {
         return pasteBuffer
-    }
-    
-    func copyItemFromBuffer(at index: Int) {
-        isBufferAppendable = false
-        copyToClipboard(pasteBuffer[index])
     }
     
     func joinItems(separator: String) {
@@ -272,12 +267,12 @@ class PasteBuffer {
         }
     }
 
-    private func isLocalCopy(at pasteboardChangeTime: Date) -> Bool {
-        guard let lastEventTime = lastUserEventDate else {
+    private func isLocalCopy(at pasteboardChangeDate: Date) -> Bool {
+        guard let lastEventDate = lastUserEventDate else {
             return false
         }
         
-        let timeDifference = pasteboardChangeTime.timeIntervalSince(lastEventTime)
+        let timeDifference = pasteboardChangeDate.timeIntervalSince(lastEventDate)
         let threshold: TimeInterval = 1.0
         
         return timeDifference < threshold

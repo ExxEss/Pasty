@@ -153,17 +153,15 @@ class BufferViewController: NSViewController {
         PasteBuffer.shared.joinItems(separator: separator)
         bufferView.reloadData()
     }
-    
-    @objc func copySelectedItem() {
-        let selectedRow = bufferView.selectedRow
-        guard selectedRow >= 0 else {
-            return // No selection
-        }
-        
-        PasteBuffer.shared.copyItemFromBuffer(at: selectedRow)
+}
+
+extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate, ShortcutTableCellViewDelegate {
+    // Implement the data source and delegate methods to display the buffer item
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return buffer.count
     }
     
-    func cellDidEndEditing(_ cell: ShortcutTableCellView, newValue: String) {
+    func cellDidChange(_ cell: ShortcutTableCellView, newValue: String) {
         let row = bufferView.row(for: cell)
         if row >= 0 {
             // Update your data model with the new value
@@ -174,13 +172,6 @@ class BufferViewController: NSViewController {
             bufferView.reloadData(forRowIndexes: IndexSet(integer: row),
                                   columnIndexes: IndexSet(integer: 0))
         }
-    }
-}
-
-extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
-    // Implement the data source and delegate methods to display the buffer item
-    func numberOfRows(in tableView: NSTableView) -> Int {
-        return buffer.count
     }
     
     func tableViewSelectionDidChange(_ notification: Notification) {}
@@ -197,6 +188,7 @@ extension BufferViewController: NSTableViewDataSource, NSTableViewDelegate {
             cellView.identifier = cellIdentifier
         }
         
+        cellView.delegate = self
         cellView.configure(with: buffer[row], row: row)
         return cellView
     }

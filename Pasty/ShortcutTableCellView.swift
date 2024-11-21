@@ -7,158 +7,22 @@
 
 import Cocoa
 
-protocol ContentPopoverDelegate: AnyObject {
-    func popoverDidEndEditing(_ content: String)
-}
-
-class ContentPopoverViewController: NSViewController {
-    weak var delegate: ContentPopoverDelegate?
-    private var originalContent: String
-    
-    private var trackingArea: NSTrackingArea?
-    
-    private var hasChanges = false {
-        didSet {
-            saveButton.isHidden = !hasChanges
-        }
-    }
-    
-    private lazy var scrollView: NSScrollView = {
-        let scroll = NSScrollView()
-        scroll.hasVerticalScroller = true
-        scroll.hasHorizontalScroller = false
-        scroll.autohidesScrollers = true
-        scroll.borderType = .noBorder
-        scroll.drawsBackground = false
-        scroll.translatesAutoresizingMaskIntoConstraints = false
-        return scroll
-    }()
-    
-    private lazy var textView: NSTextView = {
-        // Create text storage, layout manager, and text container
-        let storage = NSTextStorage()
-        let layoutManager = NSLayoutManager()
-        storage.addLayoutManager(layoutManager)
-        
-        let textContainer = NSTextContainer(size: NSSize(width: 500, height: 900))
-        textContainer.widthTracksTextView = true
-        layoutManager.addTextContainer(textContainer)
-        
-        // Create text view with the configured components
-        let text = NSTextView(frame: .zero, textContainer: textContainer)
-        text.autoresizingMask = [.width, .height]
-//        text.isEditable = true
-//        text.isSelectable = true
-        text.allowsUndo = true
-        text.font = .menuFont(ofSize: 0)
-        text.textColor = .white
-        text.drawsBackground = false
-        text.enabledTextCheckingTypes = 0
-        text.isAutomaticQuoteSubstitutionEnabled = false
-        text.isAutomaticDashSubstitutionEnabled = false
-        text.isAutomaticTextReplacementEnabled = false
-        text.isAutomaticSpellingCorrectionEnabled = false
-        text.isVerticallyResizable = true
-        text.isHorizontallyResizable = false
-        text.textContainerInset = NSSize(width: 10, height: 10)
-        
-        // Set the content
-        text.string = self.originalContent
-        
-        return text
-    }()
-    
-    private lazy var saveButton: NSButton = {
-        let button = NSButton(title: "Save", target: self, action: #selector(saveButtonClicked))
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.isHidden = true
-        return button
-    }()
-    
-    init(content: String) {
-        self.originalContent = content
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func loadView() {
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 500, height: 900))
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        
-        containerView.addSubview(scrollView)
-        containerView.addSubview(saveButton)
-        
-        scrollView.documentView = textView
-        
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: containerView.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: saveButton.topAnchor, constant: -10),
-            
-            saveButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
-            saveButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20),
-            saveButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
-            saveButton.heightAnchor.constraint(equalToConstant: 30)
-        ])
-        
-        self.view = containerView
-    }
-        
-    @objc private func saveButtonClicked() {
-        delegate?.popoverDidEndEditing(textView.string)
-        hasChanges = false
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        textView.delegate = self
-        
-        // Ensure the text view fills the scroll view's content area
-        let contentSize = scrollView.contentSize
-        textView.minSize = NSSize(width: 0, height: 0)
-        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-        textView.textContainer?.containerSize = NSSize(width: contentSize.width, height: CGFloat.greatestFiniteMagnitude)
-    }
-    
-    override func viewDidLayout() {
-        super.viewDidLayout()
-        // Update text container width when view is laid out
-        textView.textContainer?.containerSize = NSSize(width: scrollView.contentSize.width - 20, height: CGFloat.greatestFiniteMagnitude)
-    }
-}
-
-extension ContentPopoverViewController: NSTextViewDelegate {
-    func textDidEndEditing(_ notification: Notification) {
-        guard let textView = notification.object as? NSTextView else { return }
-        delegate?.popoverDidEndEditing(textView.string)
-    }
-    
-    func textDidChange(_ notification: Notification) {
-        guard let textView = notification.object as? NSTextView else { return }
-        hasChanges = textView.string != originalContent
-    }
-}
-
 protocol ShortcutTableCellViewDelegate: AnyObject {
-    func cellDidEndEditing(_ cell: ShortcutTableCellView, newValue: String)
+    func cellDidChange(_ cell: ShortcutTableCellView, newValue: String)
 }
 
-class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
+class ShortcutTableCellView: NSTableCellView {
+    weak var delegate: ShortcutTableCellViewDelegate?
+    
     private var contentField: NSTextField?
     private var modifiersLabel: NSTextField?
     private var numberLabel: NSTextField?
-    private var originalString: String = ""
+    private var content: String = ""
     
+    private var hoverTimer: Timer?
     private var popover: NSPopover?
+    
     private var trackingArea: NSTrackingArea?
-    
-    private var isEditing = false
-    
-    weak var delegate: ShortcutTableCellViewDelegate?
     
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -210,6 +74,10 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
         addSubview(numberLabel)
         
         updateTrackingAreas()
+        
+        NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
+            self?.handleMouseMoved(event)
+        }
     }
     
     override func updateTrackingAreas() {
@@ -228,12 +96,34 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
             addTrackingArea(trackingArea)
         }
     }
+    
+    private func handleMouseMoved(_ event: NSEvent) {
+        let mouseLocation = NSEvent.mouseLocation // Mouse location in screen coordinates
+        
+        // Get the cell view's frame in screen coordinates
+        guard let window = self.window,
+              let popover = popover else { return }
+        
+        let cellViewFrame = window.convertToScreen(self.convert(self.bounds, to: nil))
+        let popoverFrame = popover.contentViewController?.view.window?.frame ?? .zero
+        
+        // Check if the mouse is outside both the cell view and the popover
+        if !cellViewFrame.contains(mouseLocation) && !popoverFrame.contains(mouseLocation) {
+            hidePopover()
+        }
+    }
         
     override func mouseEntered(with event: NSEvent) {
-        showPopover()
+        hoverTimer?.invalidate() // Cancel any existing timer
+        hoverTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+            self?.showPopover()
+        }
     }
         
     override func mouseExited(with event: NSEvent) {
+        hoverTimer?.invalidate() // Cancel the timer
+        hoverTimer = nil
+        
         // Get the mouse location in screen coordinates
         let mouseLocation = NSEvent.mouseLocation
         
@@ -250,16 +140,16 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
         
     private func showPopover() {
         guard popover == nil,
-              let content = Optional(originalString),
+              let content = Optional(content),
               !content.isEmpty else {
             return
         }
         
-        let contentViewController = ContentPopoverViewController(content: content)
-        contentViewController.delegate = self
+        let controller = PopoverViewController(content: content)
+        controller.delegate = self
         
         let popover = NSPopover()
-        popover.contentViewController = contentViewController
+        popover.contentViewController = controller
         popover.behavior = .semitransient
         popover.animates = true
         
@@ -297,17 +187,9 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
         popover?.close()
         popover = nil
     }
-        
-    // ContentPopoverDelegate
-    func popoverDidEndEditing(_ content: String) {
-        delegate?.cellDidEndEditing(self, newValue: content)
-        isEditing = false
-        hidePopover()
-    }
-        
-    // Handle when the text view begins editing
-    func textViewDidBeginEditing(_ notification: Notification) {
-        isEditing = true
+    
+    func textDidChange(_ content: String) {
+        delegate?.cellDidChange(self, newValue: content)
     }
         
     // Clean up
@@ -361,7 +243,7 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
     }
     
     func configure(with content: String, row: Int) {
-        originalString = content
+        self.content = content
         contentField?.stringValue = formatString(from: content)
         
         // Only show shortcuts for the first 9 items
@@ -372,12 +254,20 @@ class ShortcutTableCellView: NSTableCellView, ContentPopoverDelegate {
             modifiersLabel?.stringValue = ""
             numberLabel?.stringValue = ""
         }
-        
-        updateTrackingAreas()
     }
 }
 
-extension ShortcutTableCellView: NSTextFieldDelegate {
+extension ShortcutTableCellView: NSTextFieldDelegate, PopoverDelegate {
+    func textDidChange(_ notification: Notification) {
+        guard let textView = notification.object as? NSTextView else { return }
+        content = textView.string
+        
+        // Update contentField without closing popover
+        contentField?.stringValue = formatString(from: content)
+        
+        delegate?.cellDidChange(self, newValue: content)
+    }
+    
     private func formatString(from originalString: String) -> String {
         let trimmedString = originalString.trimmingCharacters(in: .whitespacesAndNewlines)
         

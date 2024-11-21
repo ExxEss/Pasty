@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		531259282B42BB6400D66761 /* CustomTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531259272B42BB6400D66761 /* CustomTableView.swift */; };
+		5370A4DC2CEEE3FD00A9EB08 /* PopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5370A4DB2CEEE3FD00A9EB08 /* PopoverViewController.swift */; };
 		53DAD4732B2D394900213CC2 /* PastyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DAD4722B2D394900213CC2 /* PastyApp.swift */; };
 		53DAD4772B2D394B00213CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53DAD4762B2D394B00213CC2 /* Assets.xcassets */; };
 		53DAD47A2B2D394B00213CC2 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53DAD4792B2D394B00213CC2 /* Preview Assets.xcassets */; };
@@ -25,6 +26,7 @@
 
 /* Begin PBXFileReference section */
 		531259272B42BB6400D66761 /* CustomTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomTableView.swift; sourceTree = "<group>"; };
+		5370A4DB2CEEE3FD00A9EB08 /* PopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverViewController.swift; sourceTree = "<group>"; };
 		53DAD46F2B2D394900213CC2 /* Pasty.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pasty.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53DAD4722B2D394900213CC2 /* PastyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastyApp.swift; sourceTree = "<group>"; };
 		53DAD4762B2D394B00213CC2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -79,6 +81,7 @@
 				53DAD4872B2D3A5A00213CC2 /* BufferViewController.swift */,
 				531259272B42BB6400D66761 /* CustomTableView.swift */,
 				53F0EF912CEC43D9006CA2B0 /* ShortcutTableCellView.swift */,
+				5370A4DB2CEEE3FD00A9EB08 /* PopoverViewController.swift */,
 				53DAD4762B2D394B00213CC2 /* Assets.xcassets */,
 				53E3E65D2C1BA46C004470FE /* Sounds */,
 				53DAD47B2B2D394B00213CC2 /* Pasty.entitlements */,
@@ -188,6 +191,7 @@
 			files = (
 				53F0EF922CEC43D9006CA2B0 /* ShortcutTableCellView.swift in Sources */,
 				53DAD4862B2D3A1C00213CC2 /* PasteBuffer.swift in Sources */,
+				5370A4DC2CEEE3FD00A9EB08 /* PopoverViewController.swift in Sources */,
 				53DAD4842B2D39E500213CC2 /* BufferWindowController.swift in Sources */,
 				531259282B42BB6400D66761 /* CustomTableView.swift in Sources */,
 				53DAD4882B2D3A5A00213CC2 /* BufferViewController.swift in Sources */,

@@ -65,7 +65,6 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
         
         // Start tracking global mouse movements
         startMonitoringMouse()
-        
         setupTrackingArea()
     }
 
@@ -75,6 +74,9 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+        
+        stopMonitoringMouse()
+        removeTrackingArea()
     }
     
     private func startMonitoringMouse() {
@@ -93,11 +95,13 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     private func checkMouseLocation() {
         let mouseLocation = NSEvent.mouseLocation
         
-        // Check if the mouse is outside all windows
+        // Check if the mouse is outside all windows with padding
         let windows = NSApplication.shared.windows
+        let padding: CGFloat = 20
         let isMouseOutside = !windows.contains { window in
-            let windowFrame = window.frame
-            return windowFrame.contains(mouseLocation)
+            // Expand the frame by padding
+            let paddedFrame = window.frame.insetBy(dx: -padding, dy: -padding)
+            return paddedFrame.contains(mouseLocation)
         }
         
         if isMouseOutside {
@@ -176,9 +180,6 @@ class BufferWindowController: NSWindowController, NSWindowDelegate {
     
     func closePanel() {
         updatePanelTitle()
-        removeTrackingArea()
-        stopMonitoringMouse()
-
         self.window?.close()
     }
 }
